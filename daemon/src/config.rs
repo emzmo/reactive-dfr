@@ -20,7 +20,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-const BASE_CFG_PATH: &str = "/usr/share/not-quite-tiny-dfr/config.toml";
+const BASE_CFG_PATH: &str = "/usr/share/reactive-dfr/config.toml";
 
 pub struct Config {
     pub show_button_outlines: bool,
@@ -511,7 +511,7 @@ fn resolve_image_path(path: &str) -> Option<PathBuf> {
             return Some(candidate);
         }
     }
-    for base in ["/etc/not-quite-tiny-dfr", "/usr/share/not-quite-tiny-dfr"] {
+    for base in ["/etc/reactive-dfr", "/usr/share/reactive-dfr"] {
         let candidate = Path::new(base).join(path);
         if candidate.exists() {
             return Some(candidate);
@@ -611,7 +611,7 @@ fn load_config(
             Ok(text) => match toml::from_str::<ConfigProxy>(&text) {
                 Ok(over) => base.merge(over),
                 Err(e) => {
-                    eprintln!("not-quite-tiny-dfr: {}: {e}", path.display());
+                    eprintln!("reactive-dfr: {}: {e}", path.display());
                     let name = path
                         .file_name()
                         .and_then(|n| n.to_str())
@@ -620,7 +620,7 @@ fn load_config(
                 }
             },
             Err(e) if e.kind() == ErrorKind::NotFound => {}
-            Err(e) => eprintln!("not-quite-tiny-dfr: cannot read {}: {e}", path.display()),
+            Err(e) => eprintln!("reactive-dfr: cannot read {}: {e}", path.display()),
         }
     }
 
@@ -636,7 +636,7 @@ fn load_config(
         let blur = style_proxy.background_image_blur.unwrap_or(false);
         match load_background_image(path, width as i32, height as i32, blur) {
             Ok(surf) => style.background_image = Some(surf),
-            Err(e) => eprintln!("not-quite-tiny-dfr: background image {path:?}: {e}"),
+            Err(e) => eprintln!("reactive-dfr: background image {path:?}: {e}"),
         }
     }
     // Default icon size for buttons that don't set their own IconWidth/Height.
@@ -650,7 +650,7 @@ fn load_config(
         Some(sets) if sets.iter().any(|s| !s.is_empty()) => {
             let (kept, empty): (Vec<_>, Vec<_>) = sets.into_iter().partition(|s| !s.is_empty());
             if !empty.is_empty() {
-                eprintln!("not-quite-tiny-dfr: ignoring empty layer(s) in Layers");
+                eprintln!("reactive-dfr: ignoring empty layer(s) in Layers");
             }
             kept
         }
@@ -674,7 +674,7 @@ fn load_config(
     // parse error keeps precedence -- these key sets may be a stale mix.
     if config_error.is_none() {
         if let Some(err) = pin_mismatch_error(&key_sets) {
-            eprintln!("not-quite-tiny-dfr: {err}");
+            eprintln!("reactive-dfr: {err}");
             config_error = Some(err);
         }
     }
@@ -759,7 +759,7 @@ fn load_config(
 /// file arrive (IN_MOVED_TO/IN_CREATE) and stays valid across saves.
 ///
 /// `wd` is `None` when the directory does not exist yet (e.g. before the user
-/// creates ~/.config/not-quite-tiny-dfr/); it is re-armed on later polls so a
+/// creates ~/.config/reactive-dfr/); it is re-armed on later polls so a
 /// config dropped in later starts being watched.
 struct Watch {
     /// The directory we arm the inotify watch on (a config file's parent).
@@ -846,7 +846,7 @@ impl ConfigManager {
         layers: &mut Vec<FunctionLayer>,
     ) -> Option<Widgets> {
         // Pick up directories that did not exist when we last tried to watch
-        // them (e.g. the user just created ~/.config/not-quite-tiny-dfr/).
+        // them (e.g. the user just created ~/.config/reactive-dfr/).
         let mut newly_armed = false;
         for watch in &mut self.watches {
             if watch.wd.is_none() {
@@ -922,8 +922,8 @@ mod tests {
     fn shipped_template_parses() {
         // The template ships fully commented (a reference); it must still parse
         // to an all-None proxy, and the code defaults must supply valid layers.
-        let text = read_to_string("share/not-quite-tiny-dfr/config.toml")
-            .expect("template config should exist at share/not-quite-tiny-dfr/config.toml");
+        let text = read_to_string("share/reactive-dfr/config.toml")
+            .expect("template config should exist at share/reactive-dfr/config.toml");
         let _cfg: ConfigProxy = toml::from_str(&text).expect("template config should parse");
         assert!(!default_primary_layer().is_empty());
         assert!(!default_media_layer().is_empty());

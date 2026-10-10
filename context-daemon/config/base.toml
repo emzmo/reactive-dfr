@@ -1,4 +1,4 @@
-# base.toml — global config for not-quite-tiny-dfr
+# base.toml — global config for reactive-dfr
 # Layer 0 is injected by the context daemon (compose replaces it).
 # Layers 1+ are fixed: media keys, system monitor, clock.
 
@@ -29,8 +29,8 @@ Layers = [
     { Gpu = "celsius", Stretch = 2 },
     { Battery = "both", Stretch = 2 },
     { Time = "%H:%M", Stretch = 2 },
-    { Command = "sh ~/.config/not-quite-tiny-dfr/widgets/ip.sh", Interval = 30, Stretch = 2, OnClick = "sh ~/.config/not-quite-tiny-dfr/widgets/copy_ip.sh" },
-    { Command = "sh ~/.config/not-quite-tiny-dfr/widgets/cpu.sh", Interval = 3, Stretch = 2, OnClick = "Expand", ExpandCommand = "sh ~/.config/not-quite-tiny-dfr/widgets/cpu_expand.sh", ExpandStretch = 4 },
+    { Command = "sh ~/.config/reactive-dfr/widgets/ip.sh", Interval = 30, Stretch = 2, OnClick = "sh ~/.config/reactive-dfr/widgets/copy_ip.sh" },
+    { Command = "sh ~/.config/reactive-dfr/widgets/cpu.sh", Interval = 3, Stretch = 2, OnClick = "Expand", ExpandCommand = "sh ~/.config/reactive-dfr/widgets/cpu_expand.sh", ExpandStretch = 4 },
   ],
   # Layer 3 (index 3): Clock + date
   [

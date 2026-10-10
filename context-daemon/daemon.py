@@ -33,7 +33,7 @@ CONFIG_DIR = Path(os.environ.get("TOUCHBAR_CONFIG_DIR", str(Path.home() / ".conf
 BASE_PATH = CONFIG_DIR / "base.toml"
 MATCHER_PATH = CONFIG_DIR / "matcher.toml"
 CONTEXTS_DIR = CONFIG_DIR / "contexts"
-OUT_PATH = Path(os.environ.get("TOUCHBAR_OUT", str(Path.home() / ".config" / "not-quite-tiny-dfr" / "config.toml")))
+OUT_PATH = Path(os.environ.get("TOUCHBAR_OUT", str(Path.home() / ".config" / "reactive-dfr" / "config.toml")))
 
 from matcher import load_matcher, match_context
 from composer import compose, write_atomic

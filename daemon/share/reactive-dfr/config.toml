@@ -1,4 +1,4 @@
-# not-quite-tiny-dfr configuration.
+# reactive-dfr configuration.
 # Merged in order: /usr/share -> /etc -> ~/.config (later files win, live-reloaded).
 # Commented values are the built-in defaults; uncomment to override.
 # Top-level keys must come before [Style]; keep [Style] last.
@@ -103,8 +103,8 @@
 # whenever the pack reports fully charged and rescales 0..ceiling -> 0..100, so a
 # degraded T2 cell that stops at ~97% reads a flat 100% like macOS). Trailing
 # arg: UPower device leaf (default DisplayDevice):
-# { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh", Interval = 30, Stretch = 1 },
-# { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh -w -f 96", Interval = 0, Stretch = 1 },
+# { Command = "sh /usr/share/reactive-dfr/widgets/battery.sh", Interval = 30, Stretch = 1 },
+# { Command = "sh /usr/share/reactive-dfr/widgets/battery.sh -w -f 96", Interval = 0, Stretch = 1 },
 
 # OnClick = "Expand" makes any command widget tap-to-expand (the slider's
 # animation): the collapsed button shows Command's output, and a tap widens it
@@ -114,7 +114,7 @@
 # of sight, and the two contents crossfade during the animation. Example --
 # battery percentage that expands to the time-to-empty ETA (battery_eta.sh,
 # also from UPower, so no extra dependency):
-# { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh -t", Interval = 30, OnClick = "Expand", ExpandCommand = "sh /usr/share/not-quite-tiny-dfr/widgets/battery_eta.sh", ExpandStretch = 3 },
+# { Command = "sh /usr/share/reactive-dfr/widgets/battery.sh -t", Interval = 30, OnClick = "Expand", ExpandCommand = "sh /usr/share/reactive-dfr/widgets/battery_eta.sh", ExpandStretch = 3 },
 
 # [Style]
 # Background = "#000000"

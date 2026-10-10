@@ -103,7 +103,7 @@ pub fn run_tap_command(command: &str) {
     let command = command.to_string();
     thread::spawn(move || {
         if let Err(e) = Command::new("sh").arg("-c").arg(&command).status() {
-            eprintln!("not-quite-tiny-dfr: failed to run OnClick command {command:?}: {e}");
+            eprintln!("reactive-dfr: failed to run OnClick command {command:?}: {e}");
         }
     });
 }
@@ -310,7 +310,7 @@ fn curl_get(url: &str) -> Option<String> {
             "--max-time",
             "10",
             "-A",
-            "not-quite-tiny-dfr (https://github.com/seojoonlee-dev/not-quite-tiny-dfr)",
+            "reactive-dfr (https://github.com/seojoonlee-dev/reactive-dfr)",
             url,
         ])
         .output()
@@ -511,10 +511,10 @@ fn cache_dir(sub: &str) -> Option<PathBuf> {
         .map(PathBuf::from)
         .or_else(|| {
             std::env::var_os("XDG_CACHE_HOME")
-                .map(|d| PathBuf::from(d).join("not-quite-tiny-dfr"))
+                .map(|d| PathBuf::from(d).join("reactive-dfr"))
         })
         .or_else(|| {
-            std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".cache/not-quite-tiny-dfr"))
+            std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".cache/reactive-dfr"))
         })?;
     Some(base.join(sub))
 }

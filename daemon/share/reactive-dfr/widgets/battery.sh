@@ -1,5 +1,5 @@
 #!/bin/sh
-# Bundled default widget for not-quite-tiny-dfr.
+# Bundled default widget for reactive-dfr.
 # Prints the battery percentage from the UPower daemon -- the same source the
 # caelestia shell reads. UPower recalibrates the battery's learned "full"
 # charge, so it stays accurate on degraded T2 Macs where the kernel's
@@ -26,8 +26,8 @@
 # DisplayDevice, the aggregate battery UPower presents (what caelestia uses).
 #
 # Use it from your config (plain 30s poll, or -w for instant plug/unplug):
-#   { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh", Interval = 30, Stretch = 1 }
-#   { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh -w -f 96", Interval = 0, Stretch = 1 }
+#   { Command = "sh /usr/share/reactive-dfr/widgets/battery.sh", Interval = 30, Stretch = 1 }
+#   { Command = "sh /usr/share/reactive-dfr/widgets/battery.sh -w -f 96", Interval = 0, Stretch = 1 }
 
 color=""
 noicon=""

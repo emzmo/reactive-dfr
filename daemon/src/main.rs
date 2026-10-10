@@ -149,7 +149,7 @@ fn cubic_bezier(t: f64, x1: f64, y1: f64, x2: f64, y2: f64) -> f64 {
     value(y1, y2, u)
 }
 
-/// The user's `~/.config/not-quite-tiny-dfr` directory, if a target user was resolved.
+/// The user's `~/.config/reactive-dfr` directory, if a target user was resolved.
 /// Icons named in the config are looked up here first. Set once — either at
 /// startup if a user is already logged in, or later (from the main loop) the
 /// moment one logs in, when the daemon came up before anyone was logged in.
@@ -1035,7 +1035,7 @@ impl FunctionLayer {
                             }
                             None => {
                                 eprintln!(
-                                    "not-quite-tiny-dfr: OnClick = Expand needs an \
+                                    "reactive-dfr: OnClick = Expand needs an \
                                      ExpandCommand; ignoring"
                                 );
                                 None
@@ -1690,11 +1690,11 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     // Config override layers, lowest precedence first: system /etc, then (once we
     // know who to serve) the per-user ~/.config. Both are merged on load and
     // watched for live-reload; the user layer is attached later if not known yet.
-    let mut cfg_paths = vec![PathBuf::from("/etc/not-quite-tiny-dfr/config.toml")];
+    let mut cfg_paths = vec![PathBuf::from("/etc/reactive-dfr/config.toml")];
     if let Some(u) = &target_user {
-        let dir = u.home.join(".config/not-quite-tiny-dfr");
+        let dir = u.home.join(".config/reactive-dfr");
         println!(
-            "not-quite-tiny-dfr: serving user {:?}, config dir {}",
+            "reactive-dfr: serving user {:?}, config dir {}",
             u.name,
             dir.display()
         );
@@ -1702,7 +1702,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         let _ = USER_ICON_DIR.set(Some(dir.clone()));
         cfg_paths.push(dir.join("config.toml"));
     } else {
-        println!("not-quite-tiny-dfr: no logged-in user yet; starting on system config, will load ~/.config on login");
+        println!("reactive-dfr: no logged-in user yet; starting on system config, will load ~/.config on login");
     }
 
     let mut cfg_mgr = ConfigManager::new(cfg_paths, width, height);
@@ -1959,9 +1959,9 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         if !privileges_dropped && last_user_poll.elapsed() >= USER_POLL_INTERVAL {
             last_user_poll = Instant::now();
             if let Some(u) = user::resolve_target_user() {
-                let dir = u.home.join(".config/not-quite-tiny-dfr");
+                let dir = u.home.join(".config/reactive-dfr");
                 println!(
-                    "not-quite-tiny-dfr: {:?} logged in, loading config dir {}",
+                    "reactive-dfr: {:?} logged in, loading config dir {}",
                     u.name,
                     dir.display()
                 );

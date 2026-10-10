@@ -1,5 +1,5 @@
 #!/bin/sh
-# Bundled expand-view widget for not-quite-tiny-dfr's battery.sh.
+# Bundled expand-view widget for reactive-dfr's battery.sh.
 #
 # Instant, smoothed battery time-to-empty / time-to-full. It combines UPower's
 # recalibrated capacity (Energy / EnergyFull -- accurate on degraded T2 packs)

@@ -357,7 +357,7 @@ fn run_command(command: &str, stop: &AtomicBool) -> (WidgetOutput, bool) {
             // The output is discarded for slider set/mute commands, so the
             // log line is the only trace a spawn failure leaves (e.g. no `sh`
             // on the unit's PATH).
-            eprintln!("not-quite-tiny-dfr: failed to run command {command:?}: {e}");
+            eprintln!("reactive-dfr: failed to run command {command:?}: {e}");
             return (
                 WidgetOutput {
                     text: format!("err: {e}"),
@@ -381,7 +381,7 @@ fn run_command(command: &str, stop: &AtomicBool) -> (WidgetOutput, bool) {
                 if timed_out || stop.load(Ordering::Relaxed) {
                     if timed_out {
                         eprintln!(
-                            "not-quite-tiny-dfr: command timed out after {}s: {command:?}",
+                            "reactive-dfr: command timed out after {}s: {command:?}",
                             COMMAND_TIMEOUT.as_secs()
                         );
                     }

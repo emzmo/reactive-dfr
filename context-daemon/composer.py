@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""composer.py — generates not-quite-tiny-dfr config.toml.
+"""composer.py — generates reactive-dfr config.toml.
 
 Merges config/base.toml (global fields + Style + fixed layers) with
 the active context's layer (config/contexts/<name>.toml), then
 serializes to TOML using tomli_w and writes atomically (rename) to
-~/.config/not-quite-tiny-dfr/config.toml, triggering not-quite-tiny-dfr's
+~/.config/reactive-dfr/config.toml, triggering reactive-dfr's
 inotify live-reload.
 
 The context provides a single [[layer]] (array of buttons) that replaces
@@ -18,7 +18,7 @@ import tomllib
 import tomli_w
 from pathlib import Path
 
-DEFAULT_OUT = str(Path.home() / ".config" / "not-quite-tiny-dfr" / "config.toml")
+DEFAULT_OUT = str(Path.home() / ".config" / "reactive-dfr" / "config.toml")
 
 
 def _load_toml(path):
@@ -72,7 +72,7 @@ def compose(base_path, context_path):
 def write_atomic(text, out_path=None):
     """Write with atomic rename (temp in the same dir).
 
-    not-quite-tiny-dfr runs as the logged-in user and watches this
+    reactive-dfr runs as the logged-in user and watches this
     file via inotify (IN_MOVED_TO triggers live-reload).
     """
     if out_path is None:

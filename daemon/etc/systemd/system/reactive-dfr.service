@@ -1,11 +1,11 @@
 [Unit]
-Description=not-quite-tiny-dfr Touch Bar daemon (T1)
+Description=reactive-dfr Touch Bar daemon (T1)
 # Must run after the iBridge config switch so /dev/dri/card0 exists.
 After=ibridge-config-switch.service systemd-logind.service systemd-user-sessions.service
 Requires=ibridge-config-switch.service
 
 [Service]
-ExecStart=/usr/bin/not-quite-tiny-dfr
+ExecStart=/usr/bin/reactive-dfr
 Restart=always
 RestartSec=2
 
@@ -19,7 +19,7 @@ ProtectKernelModules=true
 ProtectKernelLogs=true
 ProtectControlGroups=strict
 RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
-CacheDirectory=not-quite-tiny-dfr
+CacheDirectory=reactive-dfr
 RestrictNamespaces=true
 RestrictSUIDSGID=true
 

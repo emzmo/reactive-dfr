@@ -361,19 +361,19 @@ pub(crate) fn try_load_image(
         locations = candidates.into_iter().flatten().collect();
     } else {
         // Standard file icons, searched most-specific first: the user's
-        // ~/.config/not-quite-tiny-dfr, then the system /etc, then the shipped /usr/share.
+        // ~/.config/reactive-dfr, then the system /etc, then the shipped /usr/share.
         let mut candidates = Vec::new();
         if let Some(Some(dir)) = USER_ICON_DIR.get() {
             candidates.push(dir.join(format!("{name}.svg")));
             candidates.push(dir.join(format!("{name}.png")));
         }
-        candidates.push(PathBuf::from(format!("/etc/not-quite-tiny-dfr/{name}.svg")));
-        candidates.push(PathBuf::from(format!("/etc/not-quite-tiny-dfr/{name}.png")));
+        candidates.push(PathBuf::from(format!("/etc/reactive-dfr/{name}.svg")));
+        candidates.push(PathBuf::from(format!("/etc/reactive-dfr/{name}.png")));
         candidates.push(PathBuf::from(format!(
-            "/usr/share/not-quite-tiny-dfr/{name}.svg"
+            "/usr/share/reactive-dfr/{name}.svg"
         )));
         candidates.push(PathBuf::from(format!(
-            "/usr/share/not-quite-tiny-dfr/{name}.png"
+            "/usr/share/reactive-dfr/{name}.png"
         )));
         locations = candidates;
     };
@@ -730,7 +730,7 @@ impl Button {
                 "fahrenheit" => (temp, any) = (Some(CpuTempUnit::Fahrenheit), true),
                 "watts" | "power" => (watts, any) = (true, true),
                 other => {
-                    eprintln!("not-quite-tiny-dfr: unknown Cpu component {other:?}, ignoring");
+                    eprintln!("reactive-dfr: unknown Cpu component {other:?}, ignoring");
                 }
             }
         }
@@ -765,7 +765,7 @@ impl Button {
                 "fahrenheit" => (temp, any) = (Some(CpuTempUnit::Fahrenheit), true),
                 "watts" | "power" => (watts, any) = (true, true),
                 other => {
-                    eprintln!("not-quite-tiny-dfr: unknown Gpu component {other:?}, ignoring");
+                    eprintln!("reactive-dfr: unknown Gpu component {other:?}, ignoring");
                 }
             }
         }

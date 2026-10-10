@@ -1,17 +1,17 @@
 use nix::unistd::{Uid, User};
 use std::{env, path::PathBuf, process::Command};
 
-/// A resolved target user whose per-user config (~/.config/not-quite-tiny-dfr) should be
+/// A resolved target user whose per-user config (~/.config/reactive-dfr) should be
 /// read, and to whom privileges are dropped.
 pub struct TargetUser {
     pub name: String,
     pub home: PathBuf,
 }
 
-/// Work out which user not-quite-tiny-dfr should serve, without blocking.
+/// Work out which user reactive-dfr should serve, without blocking.
 /// Resolution order:
 ///
-/// 1. `NOT_QUITE_TINY_DFR_USER` env var — deterministic, and the recommended way
+/// 1. `REACTIVE_DFR_USER` env var — deterministic, and the recommended way
 ///    when the daemon may start before anyone has logged in.
 /// 2. The user owning the active graphical session on seat0, via logind.
 ///
@@ -21,13 +21,13 @@ pub struct TargetUser {
 /// login still takes effect, rather than being locked out by an early fallback.
 pub fn resolve_target_user() -> Option<TargetUser> {
     // The env var is deterministic: honour it immediately.
-    if let Ok(name) = env::var("NOT_QUITE_TINY_DFR_USER") {
+    if let Ok(name) = env::var("REACTIVE_DFR_USER") {
         let name = name.trim();
         if !name.is_empty() {
             match from_name(name) {
                 Some(u) => return Some(u),
                 None => eprintln!(
-                    "not-quite-tiny-dfr: NOT_QUITE_TINY_DFR_USER={name:?} not found, ignoring"
+                    "reactive-dfr: REACTIVE_DFR_USER={name:?} not found, ignoring"
                 ),
             }
         }

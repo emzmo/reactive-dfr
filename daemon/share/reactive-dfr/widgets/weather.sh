@@ -1,5 +1,5 @@
 #!/bin/sh
-# Bundled default widget for not-quite-tiny-dfr.
+# Bundled default widget for reactive-dfr.
 # Prints the current weather from wttr.in.
 #
 # Usage: weather.sh [-e] [-H] [-w] [location]
@@ -9,7 +9,7 @@
 # The location defaults to IP geolocation.
 #
 # Use it from your config:
-#   { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/weather.sh -e -H Seoul", Interval = 900, Stretch = 3 }
+#   { Command = "sh /usr/share/reactive-dfr/widgets/weather.sh -e -H Seoul", Interval = 900, Stretch = 3 }
 
 cond="%C"
 extra=""
@@ -29,7 +29,7 @@ shift $((OPTIND - 1))
 # show "weather n/a" when a fetch fails and we have never had a good reading.
 # Under the systemd sandbox the home directory is read-only; CACHE_DIRECTORY
 # (from the unit's CacheDirectory=) is the writable spot there.
-cache_dir="${CACHE_DIRECTORY:-${XDG_CACHE_HOME:-$HOME/.cache}/not-quite-tiny-dfr}"
+cache_dir="${CACHE_DIRECTORY:-${XDG_CACHE_HOME:-$HOME/.cache}/reactive-dfr}"
 cache_key=$(printf '%s' "$cond+%t$extra|$1" | tr -c 'A-Za-z0-9' '_')
 cache_file="$cache_dir/weather_$cache_key"
 

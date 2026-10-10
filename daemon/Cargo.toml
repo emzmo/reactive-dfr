@@ -1,11 +1,11 @@
 [package]
-name = "not-quite-tiny-dfr"
+name = "reactive-dfr"
 version = "0.3.7"
 edition = "2021"
 license = "MIT AND Apache-2.0"
-description = "A customizable dynamic function row daemon, forked from tiny-dfr"
-homepage = "https://github.com/seojoonlee-dev/not-quite-tiny-dfr"
-repository = "https://github.com/seojoonlee-dev/not-quite-tiny-dfr.git"
+description = "A customizable dynamic function row daemon, reactive Touch Bar daemon"
+homepage = "https://github.com/emzmo/reactive-dfr"
+repository = "https://github.com/emzmo/reactive-dfr.git"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

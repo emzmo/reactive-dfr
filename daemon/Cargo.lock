@@ -709,32 +709,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "not-quite-tiny-dfr"
-version = "0.3.7"
-dependencies = [
- "anyhow",
- "cairo-rs",
- "chrono",
- "drm",
- "freedesktop-icons",
- "image",
- "input",
- "input-linux",
- "input-linux-sys",
- "libc",
- "librsvg-rebind",
- "nix 0.29.0",
- "pango",
- "pangocairo",
- "privdrop",
- "rand",
- "serde",
- "serde_json",
- "toml 0.8.23",
- "udev",
-]
-
-[[package]]
 name = "num-traits"
 version = "0.2.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -905,6 +879,32 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
  "getrandom",
+]
+
+[[package]]
+name = "reactive-dfr"
+version = "0.3.7"
+dependencies = [
+ "anyhow",
+ "cairo-rs",
+ "chrono",
+ "drm",
+ "freedesktop-icons",
+ "image",
+ "input",
+ "input-linux",
+ "input-linux-sys",
+ "libc",
+ "librsvg-rebind",
+ "nix 0.29.0",
+ "pango",
+ "pangocairo",
+ "privdrop",
+ "rand",
+ "serde",
+ "serde_json",
+ "toml 0.8.23",
+ "udev",
 ]
 
 [[package]]
