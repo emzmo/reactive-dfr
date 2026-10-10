@@ -75,19 +75,25 @@ def apply_context(name, base_path=BASE_PATH):
 
 
 def watch_hyprland(backend):
-    """Watch Hyprland's .socket2.sock for activewindow events."""
-    sock_path = backend.event_socket_path()
-    if sock_path is None:
-        log.error("no Hyprland event socket")
-        return 1
+    """Watch Hyprland's .socket2.sock for activewindow events.
 
-    log.info("conectado a %s", sock_path)
+    Re-resolves the socket path on each reconnection so a Hyprland
+    restart (which changes the instance signature and socket path)
+    is recovered automatically.
+    """
     last = None
     while True:
         try:
+            sock_path = backend.event_socket_path()
+            if sock_path is None:
+                log.warning("no Hyprland event socket; reintentando")
+                time.sleep(2)
+                continue
+
             s = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
             s.connect(str(sock_path))
             s.settimeout(3600)
+            log.info("conectado a %s", sock_path)
             buf = b""
             while True:
                 try:

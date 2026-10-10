@@ -1,14 +1,40 @@
-# media.toml — reproductores/media: control de reproducción y volumen
+# media.toml — media players: playback, volume slider, brightness
+# Replaces layer 0 when a media player window is active.
 
-PrimaryLayerKeys = [
-    { Icon = "fast_rewind",     Action = "PreviousSong" },
-    { Icon = "play_pause",      Action = "PlayPause"    },
-    { Icon = "fast_forward",    Action = "NextSong"     },
-    { Icon = "volume_off",      Action = "Mute"         },
-    { Icon = "volume_down",     Action = "VolumeDown"   },
-    { Icon = "volume_up",       Action = "VolumeUp"     },
-    { Icon = "brightness_low",  Action = "BrightnessDown" },
-    { Icon = "brightness_high", Action = "BrightnessUp"   },
-    { Text = "⏺",  Action = "F9" },
-    { Text = "⏹",  Action = [ "LeftCtrl", "C" ] }
-]
+[[layer]]
+Text = "esc"
+Action = "Esc"
+Pinned = true
+OnClick = "Action"
+
+[[layer]]
+Icon = "fast_rewind"
+Action = "PreviousSong"
+OnClick = "Action"
+
+[[layer]]
+Icon = "play_pause"
+Action = "PlayPause"
+OnClick = "Action"
+
+[[layer]]
+Icon = "fast_forward"
+Action = "NextSong"
+OnClick = "Action"
+
+[[layer]]
+Icon = "volume_up"
+SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'"
+SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%"
+SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}"
+SliderStretch = 3
+
+[[layer]]
+Icon = "brightness_low"
+Action = "BrightnessDown"
+OnClick = "Action"
+
+[[layer]]
+Icon = "brightness_high"
+Action = "BrightnessUp"
+OnClick = "Action"
