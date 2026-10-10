@@ -1,0 +1,17 @@
+# gaming.toml — Gaming: screenshots, recording, Discord mute, volume
+# Non-intrusive system controls that work across games
+
+PrimaryLayerKeys = [
+    { Text = "SHOT", Action = "Print" },
+    { Text = "REC",  Action = [ "LeftCtrl", "LeftAlt", "R" ] },
+    { Text = "MUTE", Action = "MicMute" },
+    { Text = "VOL-", Action = "VolumeDown" },
+    { Text = "VOL+", Action = "VolumeUp" },
+    { Text = "PLAY", Action = "PlayPause" },
+    { Text = "PREV", Action = "PreviousSong" },
+    { Text = "NEXT", Action = "NextSong" },
+    { Text = "DESK", Action = [ "LeftMeta", "Tab" ] },
+    { Text = "ESC",  Action = "Esc" },
+    { Text = "F11",  Action = "F11" },
+    { Text = "F12",  Action = "F12" },
+]

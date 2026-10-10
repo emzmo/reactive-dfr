@@ -1,0 +1,17 @@
+# screenshot.toml — Screenshot utilities
+# Region, window, full screen, with clipboard/file toggle
+
+PrimaryLayerKeys = [
+    { Text = "FULL", Action = "Print" },
+    { Text = "AREA", Action = [ "LeftShift", "Print" ] },
+    { Text = "WIN",  Action = [ "LeftAlt", "Print" ] },
+    { Text = "CLIP", Action = [ "LeftCtrl", "Print" ] },
+    { Text = "DLAY", Action = [ "LeftCtrl", "LeftShift", "Print" ] },
+    { Text = "SAVE", Action = [ "LeftCtrl", "S" ] },
+    { Text = "COPY", Action = [ "LeftCtrl", "C" ] },
+    { Text = "PSTE", Action = [ "LeftCtrl", "V" ] },
+    { Text = "ESC",  Action = "Esc" },
+    { Text = "F11",  Action = "F11" },
+    { Text = "F12",  Action = "F12" },
+    { Text = "PWR",  Action = "Power" },
+]

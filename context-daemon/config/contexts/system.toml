@@ -1,0 +1,17 @@
+# system.toml — System controls: power, suspend, brightness, audio
+# System-level controls always accessible
+
+PrimaryLayerKeys = [
+    { Text = "🔒", Action = [ "LeftMeta", "L" ] },
+    { Text = "SUS", Action = [ "LeftCtrl", "LeftAlt", "Delete" ] },
+    { Text = "BR-", Action = "BrightnessDown" },
+    { Text = "BR+", Action = "BrightnessUp" },
+    { Text = "TB-", Action = "IllumDown" },
+    { Text = "TB+", Action = "IllumUp" },
+    { Text = "MUTE", Action = "Mute" },
+    { Text = "VOL-", Action = "VolumeDown" },
+    { Text = "VOL+", Action = "VolumeUp" },
+    { Text = "PWR", Action = "Power" },
+    { Text = "ESC", Action = "Esc" },
+    { Text = "F12", Action = "F12" },
+]

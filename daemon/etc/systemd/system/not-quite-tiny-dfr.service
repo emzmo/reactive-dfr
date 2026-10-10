@@ -1,0 +1,27 @@
+[Unit]
+Description=not-quite-tiny-dfr Touch Bar daemon (T1)
+# Must run after the iBridge config switch so /dev/dri/card0 exists.
+After=ibridge-config-switch.service systemd-logind.service systemd-user-sessions.service
+Requires=ibridge-config-switch.service
+
+[Service]
+ExecStart=/usr/bin/not-quite-tiny-dfr
+Restart=always
+RestartSec=2
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+PrivateTmp=true
+PrivateIPC=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+ProtectControlGroups=strict
+RestrictAddressFamilies=AF_UNIX AF_NETLINK AF_INET AF_INET6
+CacheDirectory=not-quite-tiny-dfr
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+
+[Install]
+WantedBy=graphical.target

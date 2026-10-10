@@ -1,0 +1,55 @@
+# base.toml — global config for not-quite-tiny-dfr
+# Layer 0 is injected by the context daemon (compose replaces it).
+# Layers 1+ are fixed: media keys, system monitor, clock.
+
+LayerSwipe = true
+ScrollLoop = true
+AdaptiveBrightness = true
+DimTimeout = 30
+OffTimeout = 60
+
+# Fixed layers (layer 0 is replaced by the active context)
+Layers = [
+  # Layer 1 (index 1): Media keys + volume slider
+  [
+    { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
+    { Icon = "brightness_low", Action = "BrightnessDown", OnClick = "Action" },
+    { Icon = "brightness_high", Action = "BrightnessUp", OnClick = "Action" },
+    { Icon = "backlight_low", Action = "IllumDown", OnClick = "Action" },
+    { Icon = "backlight_high", Action = "IllumUp", OnClick = "Action" },
+    { Icon = "fast_rewind", Action = "PreviousSong", OnClick = "Action" },
+    { Icon = "play_pause", Action = "PlayPause", OnClick = "Action" },
+    { Icon = "fast_forward", Action = "NextSong", OnClick = "Action" },
+    { Icon = "volume_up", SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'", SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%", SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}", SliderStretch = 3 },
+  ],
+  # Layer 2 (index 2): System monitor
+  [
+    { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
+    { Cpu = "celsius", Stretch = 2 },
+    { Gpu = "celsius", Stretch = 2 },
+    { Battery = "both", Stretch = 2 },
+    { Time = "%H:%M", Stretch = 2 },
+    { Command = "sh ~/.config/not-quite-tiny-dfr/widgets/ip.sh", Interval = 30, Stretch = 2, OnClick = "sh ~/.config/not-quite-tiny-dfr/widgets/copy_ip.sh" },
+    { Command = "sh ~/.config/not-quite-tiny-dfr/widgets/cpu.sh", Interval = 3, Stretch = 2, OnClick = "Expand", ExpandCommand = "sh ~/.config/not-quite-tiny-dfr/widgets/cpu_expand.sh", ExpandStretch = 4 },
+  ],
+  # Layer 3 (index 3): Clock + date
+  [
+    { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
+    { Time = "%H:%M", Stretch = 3 },
+    { Time = "%a %d %b", Stretch = 3 },
+  ],
+]
+
+[Style]
+Background = "#0d0d0d"
+ButtonColor = "#1a1a2e"
+ButtonColorActive = "#4a4a6e"
+TextColor = "#e0e0e0"
+ButtonSpacing = 12
+EdgePadding = 4
+CornerRadius = 10
+FontSize = 28
+IconSize = 44
+HeightPercent = 88
+BatteryChargingColor = "#00cc44"
+BatteryLowColor = "#cc3333"

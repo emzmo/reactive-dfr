@@ -1,0 +1,20 @@
+# aseprite.toml — Aseprite pixel art editor
+# Design-specific controls: undo/redo, brush, eraser, layers, palette, color
+#
+# Slide gestures (Phase 3.4) can be assigned to brush_size, opacity, color
+# via the extended ButtonConfig fields when available.
+
+PrimaryLayerKeys = [
+    { Text = "↶",   Action = [ "LeftCtrl", "Z" ] },
+    { Text = "↷",   Action = [ "LeftCtrl", "LeftShift", "Z" ] },
+    { Text = "🎨",  Action = [ "B" ] },
+    { Text = "⬛",  Action = [ "E" ] },
+    { Text = "LAY", Action = [ "LeftCtrl", "B" ] },
+    { Text = "PAL", Action = "F8" },
+    { Text = "GRD", Action = [ "LeftShift", "G" ] },
+    { Text = "MIR", Action = "M" },
+    { Text = "SKL", Action = [ "LeftCtrl", "LeftShift", "C" ] },
+    { Text = "SEL", Action = [ "M" ] },
+    { Text = "CTR", Action = [ "LeftCtrl", "LeftShift", "X" ] },
+    { Text = "SAV", Action = [ "LeftCtrl", "S" ] },
+]

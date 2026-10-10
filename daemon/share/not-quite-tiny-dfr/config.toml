@@ -1,0 +1,133 @@
+# not-quite-tiny-dfr configuration.
+# Merged in order: /usr/share -> /etc -> ~/.config (later files win, live-reloaded).
+# Commented values are the built-in defaults; uncomment to override.
+# Top-level keys must come before [Style]; keep [Style] last.
+
+# MediaLayerDefault = false
+# ShowButtonOutlines = true
+# EnablePixelShift = false
+# FontFamily = ""
+# FontBold = true
+# AdaptiveBrightness = true
+# ActiveBrightness = 128
+# DoublePressSwitchLayers = 0
+# DimTimeout = 30
+# OffTimeout = 60
+# VisibleButtons = 0
+
+# Whether a scrollable layer wraps around like a band (true) or stops at the
+# first/last button (false).
+# ScrollLoop = true
+
+# ScrollRubberBand = true
+
+# LayerSwipe = true
+
+# PinnedIgnoreScroll = true
+# PinnedIgnoreLayerSwipe = true
+
+# Seconds to shift synced lyrics; positive shows them earlier, negative later.
+# LyricOffset = 0.0
+
+# Blur the album cover behind the media panel.
+# MediaCoverBlur = false
+
+# Cache fetched album covers / lyrics on disk.
+# MediaArtCache = true
+# MediaLyricsCache = true
+
+# Pinned must mark the same leading slots on every layer; a mismatch is a
+# config error (red banner on the bar). OnClick = "Action" makes a key button
+# light up on tap (the pressed fill); widgets, sliders, and Expand buttons stay
+# flat, as does a button with no OnClick.
+# PrimaryLayerKeys = [
+#     { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
+#     { Text = "F1",  Action = "F1",  OnClick = "Action" },
+#     { Text = "F2",  Action = "F2",  OnClick = "Action" },
+#     { Text = "F3",  Action = "F3",  OnClick = "Action" },
+#     { Text = "F4",  Action = "F4",  OnClick = "Action" },
+#     { Text = "F5",  Action = "F5",  OnClick = "Action" },
+#     { Text = "F6",  Action = "F6",  OnClick = "Action" },
+#     { Text = "F7",  Action = "F7",  OnClick = "Action" },
+#     { Text = "F8",  Action = "F8",  OnClick = "Action" },
+#     { Text = "F9",  Action = "F9",  OnClick = "Action" },
+#     { Text = "F10", Action = "F10", OnClick = "Action" },
+#     { Text = "F11", Action = "F11", OnClick = "Action" },
+#     { Text = "F12", Action = "F12", OnClick = "Action" },
+# ]
+
+# Actions are Linux key names ("IllumDown"/"IllumUp" = keyboard backlight)
+# or the daemon-internal "TouchBarBrightnessDown"/"TouchBarBrightnessUp",
+# which adjust the Touch Bar's own brightness (10 levels, hold to repeat).
+# MediaLayerKeys = [
+#     { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
+#     { Icon = "brightness_low",  Action = "BrightnessDown", OnClick = "Action" },
+#     { Icon = "brightness_high", Action = "BrightnessUp",   OnClick = "Action" },
+#     { Icon = "mic_off",         Action = "MicMute",        OnClick = "Action" },
+#     { Icon = "search",          Action = "Search",         OnClick = "Action" },
+#     { Icon = "backlight_low",   Action = "IllumDown",      OnClick = "Action" },
+#     { Icon = "backlight_high",  Action = "IllumUp",        OnClick = "Action" },
+#     { Icon = "fast_rewind",     Action = "PreviousSong",   OnClick = "Action" },
+#     { Icon = "play_pause",      Action = "PlayPause",      OnClick = "Action" },
+#     { Icon = "fast_forward",    Action = "NextSong",       OnClick = "Action" },
+#     { Icon = "volume_off",      Action = "Mute",           OnClick = "Action" },
+#     { Icon = "volume_down",     Action = "VolumeDown",     OnClick = "Action" },
+#     { Icon = "volume_up",       Action = "VolumeUp",       OnClick = "Action" },
+# ]
+
+# Layers = [
+#     [ { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" }, { Text = "F1", Action = "F1", OnClick = "Action" }, { Text = "F2", Action = "F2", OnClick = "Action" } ],
+#     [ { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" }, { Icon = "play_pause", Action = "PlayPause", OnClick = "Action" } ],
+#     [ { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" }, { Time = "%H:%M" }, { Cpu = "celsius watts", Stretch = 2 } ],
+#     [ { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" }, { Gpu = "celsius watts", Stretch = 2 } ],
+# ]
+
+# Cpu/Gpu widgets take a space-separated list of "celsius", "fahrenheit",
+# "watts" (e.g. "celsius watts"). CpuLabel/GpuLabel = false drops the label
+# prefix. The GPU vendor (AMD/NVIDIA/Intel) is detected automatically.
+
+# A slider widget (SliderGet prints 0-100, optionally "NN muted"; SliderSet
+# runs with {} = new value; SliderMute runs with {} = "0" when a drag unmutes;
+# SliderMuteIcon replaces the icon while muted; SliderLowIcon replaces it below
+# 50; tap expands from Stretch to SliderStretch slots):
+# { Icon = "volume_up", SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'", SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%", SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}", SliderMuteIcon = "volume_off", SliderLowIcon = "volume_down", SliderStretch = 2 },
+
+# A media widget (playerctl/MPRIS): transport controls that, while a player is
+# running, join into a panel backed by the album cover with the track title and
+# artist. Taps control the active player. Spans Stretch slots. OnClick may name
+# a shell command to run when the panel is tapped outside the controls:
+# { Media = true, Stretch = 6, OnClick = "systemd-run --user gtk-launch spotify" },
+
+# battery.sh -- battery icon + percentage from UPower. Flags: -c, -t, -w (with
+# -w use Interval = 0), -f N (seed the "full" ceiling; the script auto-learns it
+# whenever the pack reports fully charged and rescales 0..ceiling -> 0..100, so a
+# degraded T2 cell that stops at ~97% reads a flat 100% like macOS). Trailing
+# arg: UPower device leaf (default DisplayDevice):
+# { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh", Interval = 30, Stretch = 1 },
+# { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh -w -f 96", Interval = 0, Stretch = 1 },
+
+# OnClick = "Expand" makes any command widget tap-to-expand (the slider's
+# animation): the collapsed button shows Command's output, and a tap widens it
+# to ExpandStretch slots (default 2) to show ExpandCommand's output until it
+# idles. ExpandCommand polls in the background (~5s) so a value is ready the
+# instant it opens; that value is frozen while open and only refreshes while out
+# of sight, and the two contents crossfade during the animation. Example --
+# battery percentage that expands to the time-to-empty ETA (battery_eta.sh,
+# also from UPower, so no extra dependency):
+# { Command = "sh /usr/share/not-quite-tiny-dfr/widgets/battery.sh -t", Interval = 30, OnClick = "Expand", ExpandCommand = "sh /usr/share/not-quite-tiny-dfr/widgets/battery_eta.sh", ExpandStretch = 3 },
+
+# [Style]
+# Background = "#000000"
+# BackgroundImage = ""
+# BackgroundImageBlur = false
+# ButtonColor = "#333333"
+# ButtonColorActive = "#666666"
+# TextColor = "#ffffff"
+# ButtonSpacing = 16
+# EdgePadding = 0
+# CornerRadius = 8
+# FontSize = 32
+# IconSize = 48
+# HeightPercent = 90
+# BatteryChargingColor = "#00b300"
+# BatteryLowColor = "#b30000"

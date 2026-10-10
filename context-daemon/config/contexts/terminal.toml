@@ -1,0 +1,53 @@
+# terminal.toml — terminal: signals, history, navigation, clipboard
+# Replaces layer 0 when a terminal window is active.
+
+[[layer]]
+Text = "esc"
+Action = "Esc"
+Pinned = true
+OnClick = "Action"
+
+[[layer]]
+Text = "^C"
+Action = ["LeftCtrl", "C"]
+OnClick = "Action"
+
+[[layer]]
+Text = "^D"
+Action = ["LeftCtrl", "D"]
+OnClick = "Action"
+
+[[layer]]
+Text = "^Z"
+Action = ["LeftCtrl", "Z"]
+OnClick = "Action"
+
+[[layer]]
+Text = "Clr"
+Action = ["LeftCtrl", "L"]
+OnClick = "Action"
+
+[[layer]]
+Text = "^U"
+Action = ["LeftCtrl", "U"]
+OnClick = "Action"
+
+[[layer]]
+Text = "^W"
+Action = ["LeftCtrl", "W"]
+OnClick = "Action"
+
+[[layer]]
+Text = "Up"
+Action = "Up"
+OnClick = "Action"
+
+[[layer]]
+Text = "Dn"
+Action = "Down"
+OnClick = "Action"
+
+[[layer]]
+Text = "Tab"
+Action = "Tab"
+OnClick = "Action"

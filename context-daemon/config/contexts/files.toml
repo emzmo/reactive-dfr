@@ -1,0 +1,14 @@
+# files.toml — gestor de archivos: refrescar, renombrar, copiar, buscar
+
+PrimaryLayerKeys = [
+    { Text = "F5",   Action = "F5" },
+    { Text = "F2",   Action = "F2" },
+    { Text = "F6",   Action = "F6" },
+    { Text = "⌘",    Action = [ "LeftCtrl", "L" ] },
+    { Text = "🔍",   Action = [ "LeftCtrl", "F" ] },
+    { Text = "📋",   Action = [ "LeftCtrl", "C" ] },
+    { Text = "✂",    Action = [ "LeftCtrl", "X" ] },
+    { Text = "📥",   Action = [ "LeftCtrl", "V" ] },
+    { Text = "🗑",    Action = [ "LeftCtrl", "Delete" ] },
+    { Text = "↺",    Action = [ "LeftCtrl", "Z" ] }
+]

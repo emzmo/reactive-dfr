@@ -1,0 +1,58 @@
+# browser.toml — navegador: tabs, navegación, recarga, búsqueda
+# Replaces layer 0 when a browser window is active.
+
+[[layer]]
+Text = "esc"
+Action = "Esc"
+Pinned = true
+OnClick = "Action"
+
+[[layer]]
+Text = "<"
+Action = ["LeftAlt", "Left"]
+OnClick = "Action"
+
+[[layer]]
+Text = ">"
+Action = ["LeftAlt", "Right"]
+OnClick = "Action"
+
+[[layer]]
+Text = "R"
+Action = ["LeftCtrl", "R"]
+OnClick = "Action"
+
+[[layer]]
+Text = "T+"
+Action = ["LeftCtrl", "T"]
+OnClick = "Action"
+
+[[layer]]
+Text = "X"
+Action = ["LeftCtrl", "W"]
+OnClick = "Action"
+
+[[layer]]
+Text = ">|"
+Action = ["LeftCtrl", "Tab"]
+OnClick = "Action"
+
+[[layer]]
+Text = "URL"
+Action = ["LeftCtrl", "L"]
+OnClick = "Action"
+
+[[layer]]
+Text = "F"
+Action = ["LeftCtrl", "F"]
+OnClick = "Action"
+
+[[layer]]
+Text = "H"
+Action = ["LeftCtrl", "H"]
+OnClick = "Action"
+
+[[layer]]
+Text = "D"
+Action = ["LeftCtrl", "D"]
+OnClick = "Action"

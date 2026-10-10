@@ -1,0 +1,17 @@
+# ide.toml — IDE / code editor: build, run, debug, navigation
+# Works with VS Code, VSCodium, Neovim, JetBrains (via keymap), etc.
+
+PrimaryLayerKeys = [
+    { Text = "Build", Action = [ "LeftCtrl", "LeftShift", "B" ] },
+    { Text = "Run",   Action = [ "LeftCtrl", "F5" ] },
+    { Text = "Term",  Action = [ "LeftCtrl", "LeftShift", "Grave" ] },
+    { Text = "Go",    Action = [ "LeftCtrl", "G" ] },
+    { Text = "Fmt",   Action = [ "LeftCtrl", "LeftShift", "I" ] },
+    { Text = "Find",  Action = [ "LeftCtrl", "F" ] },
+    { Text = "Rep",   Action = [ "LeftCtrl", "H" ] },
+    { Text = "Brk",   Action = "F9" },
+    { Text = "Step",  Action = "F10" },
+    { Text = "In",    Action = "F11" },
+    { Text = "Out",   Action = [ "LeftShift", "F11" ] },
+    { Text = "Sav",   Action = [ "LeftCtrl", "S" ] },
+]

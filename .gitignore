@@ -1,0 +1,23 @@
+# Rust build artifacts
+target/
+
+# Python
+*.pyc
+__pycache__/
+
+# Editor / tooling
+.opencode/
+node_modules/
+*.swp
+*.swo
+*~
+
+# Kernel build artifacts (if any copied here)
+*.ko
+*.o
+*.cmd
+*.mod
+*.mod.c
+.tmp_versions/
+Module.symvers
+modules.order

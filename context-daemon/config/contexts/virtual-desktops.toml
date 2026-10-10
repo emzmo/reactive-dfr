@@ -1,0 +1,17 @@
+# virtual-desktops.toml — Workspace / virtual desktop management
+# Move between workspaces, move windows, launch
+
+PrimaryLayerKeys = [
+    { Text = "D1", Action = [ "LeftCtrl", "LeftAlt", "1" ] },
+    { Text = "D2", Action = [ "LeftCtrl", "LeftAlt", "2" ] },
+    { Text = "D3", Action = [ "LeftCtrl", "LeftAlt", "3" ] },
+    { Text = "D4", Action = [ "LeftCtrl", "LeftAlt", "4" ] },
+    { Text = "←",  Action = [ "LeftCtrl", "LeftAlt", "Left" ] },
+    { Text = "→",  Action = [ "LeftCtrl", "LeftAlt", "Right" ] },
+    { Text = "MV←", Action = [ "LeftCtrl", "LeftShift", "Left" ] },
+    { Text = "MV→", Action = [ "LeftCtrl", "LeftShift", "Right" ] },
+    { Text = "TGL", Action = [ "LeftMeta", "Tab" ] },
+    { Text = "OVR", Action = [ "LeftMeta" ] },
+    { Text = "RUN", Action = [ "LeftMeta", "Space" ] },
+    { Text = "ESC", Action = "Esc" },
+]

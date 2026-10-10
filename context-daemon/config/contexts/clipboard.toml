@@ -1,0 +1,17 @@
+# clipboard.toml — Clipboard history and management
+# Requires a clipboard manager (wl-clipboard, copyq, clipman, etc.)
+
+PrimaryLayerKeys = [
+    { Text = "PSTE", Action = [ "LeftCtrl", "V" ] },
+    { Text = "COPY", Action = [ "LeftCtrl", "C" ] },
+    { Text = "CUT",  Action = [ "LeftCtrl", "X" ] },
+    { Text = "HIST", Action = [ "LeftCtrl", "LeftAlt", "V" ] },
+    { Text = "CLR",  Action = [ "LeftCtrl", "LeftShift", "Delete" ] },
+    { Text = "SEL",  Action = [ "LeftCtrl", "A" ] },
+    { Text = "UNDO", Action = [ "LeftCtrl", "Z" ] },
+    { Text = "REDO", Action = [ "LeftCtrl", "LeftShift", "Z" ] },
+    { Text = "F1",   Action = "F1" },
+    { Text = "F2",   Action = "F2" },
+    { Text = "F11",  Action = "F11" },
+    { Text = "ESC",  Action = "Esc" },
+]

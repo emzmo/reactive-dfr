@@ -1,0 +1,68 @@
+# default.toml — F-keys (fallback when no context matches)
+# This layer replaces layer 0 in the Layers array.
+
+[[layer]]
+Text = "esc"
+Action = "Esc"
+Pinned = true
+OnClick = "Action"
+
+[[layer]]
+Text = "F1"
+Action = "F1"
+OnClick = "Action"
+
+[[layer]]
+Text = "F2"
+Action = "F2"
+OnClick = "Action"
+
+[[layer]]
+Text = "F3"
+Action = "F3"
+OnClick = "Action"
+
+[[layer]]
+Text = "F4"
+Action = "F4"
+OnClick = "Action"
+
+[[layer]]
+Text = "F5"
+Action = "F5"
+OnClick = "Action"
+
+[[layer]]
+Text = "F6"
+Action = "F6"
+OnClick = "Action"
+
+[[layer]]
+Text = "F7"
+Action = "F7"
+OnClick = "Action"
+
+[[layer]]
+Text = "F8"
+Action = "F8"
+OnClick = "Action"
+
+[[layer]]
+Text = "F9"
+Action = "F9"
+OnClick = "Action"
+
+[[layer]]
+Text = "F10"
+Action = "F10"
+OnClick = "Action"
+
+[[layer]]
+Text = "F11"
+Action = "F11"
+OnClick = "Action"
+
+[[layer]]
+Text = "F12"
+Action = "F12"
+OnClick = "Action"

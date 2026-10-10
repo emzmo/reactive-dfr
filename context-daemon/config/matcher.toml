@@ -1,0 +1,56 @@
+# matcher.toml — assigns the active window to a context.
+# Rules are evaluated in order; the first match wins.
+# `class` compares exact (lowercase); `title` allows substring match.
+# If no rule matches, the "default" context is used.
+#
+# Format:
+#   [[context]]
+#   name  = "browser"          # filename: contexts/<name>.toml
+#   class = [ "firefox", ... ] # window classes (lowercase)
+#   title = [ "youtube", ... ] # title substrings (optional)
+
+[[context]]
+name = "aseprite"
+class = [ "aseprite", "com.aseprite.aseprite" ]
+
+[[context]]
+name = "gimp"
+class = [ "gimp", "gimp-2.10", "org.gimp.gimp" ]
+
+[[context]]
+name = "ide"
+class = [ "code", "vscodium", "code-url-handler", "jetbrains-idea", "jetbrains-pycharm", "jetbrains-clion", "jetbrains-webstorm", "jetbrains-rustrover", "neovide", "nvim" ]
+
+[[context]]
+name = "browser"
+class = [ "firefox", "librewolf", "chromium", "google-chrome", "brave-browser", "org.gnome.Epiphany", "microsoft-edge", "zen-alpha" ]
+
+[[context]]
+name = "terminal"
+class = [ "kitty", "alacritty", "foot", "wezterm", "konsole", "gnome-terminal", "xterm", "xfce4-terminal", "org.wezfurlong.wezterm", "tmux" ]
+
+[[context]]
+name = "media"
+class = [ "spotify", "mpv", "vlc", "celluloid", "io.github.celluloid_player.Celluloid", "freetube", "rhythmbox", "obs", "com.obsproject.Studio" ]
+title = [ "youtube", "netflix", "prime video", "disney+", "spotify", "twitch" ]
+
+[[context]]
+name = "files"
+class = [ "thunar", "nemo", "pcmanfm", "dolphin", "org.gnome.Nautilus", "nautilus", "org.kde.dolphin", "org.gnome.Files" ]
+
+[[context]]
+name = "comms"
+class = [ "discord", "vesktop", "element", "signal", "telegramdesktop", "slack", "org.telegram.desktop", "org.gnome.Totem" ]
+title = [ "discord", "whatsapp", "telegram", "signal", "slack" ]
+
+[[context]]
+name = "gaming"
+class = [ "steam", "gamescope", "lutris", "wine", "heroic", "retroarch", "dolphin-emu", "pcsx2", "mgba" ]
+
+[[context]]
+name = "screenshot"
+title = [ "screenshot", "flameshot", "grim", "slurp", "gnome-screenshot" ]
+
+[[context]]
+name = "system"
+title = [ "system monitor", "htop", "btop", "gnome-system-monitor" ]

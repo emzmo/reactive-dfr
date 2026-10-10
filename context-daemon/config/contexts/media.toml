@@ -1,0 +1,14 @@
+# media.toml — reproductores/media: control de reproducción y volumen
+
+PrimaryLayerKeys = [
+    { Icon = "fast_rewind",     Action = "PreviousSong" },
+    { Icon = "play_pause",      Action = "PlayPause"    },
+    { Icon = "fast_forward",    Action = "NextSong"     },
+    { Icon = "volume_off",      Action = "Mute"         },
+    { Icon = "volume_down",     Action = "VolumeDown"   },
+    { Icon = "volume_up",       Action = "VolumeUp"     },
+    { Icon = "brightness_low",  Action = "BrightnessDown" },
+    { Icon = "brightness_high", Action = "BrightnessUp"   },
+    { Text = "⏺",  Action = "F9" },
+    { Text = "⏹",  Action = [ "LeftCtrl", "C" ] }
+]

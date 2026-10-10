@@ -1,0 +1,17 @@
+# gimp.toml — GIMP image editor
+# Tool shortcuts + color/layers/navigation
+
+PrimaryLayerKeys = [
+    { Text = "↶",   Action = [ "LeftCtrl", "Z" ] },
+    { Text = "↷",   Action = [ "LeftCtrl", "Y" ] },
+    { Text = "BR",  Action = [ "B" ] },
+    { Text = "EL",  Action = [ "E" ] },
+    { Text = "MO",  Action = [ "M" ] },
+    { Text = "SEL", Action = [ "R" ] },
+    { Text = "TXT", Action = [ "T" ] },
+    { Text = "CLR", Action = [ "X" ] },
+    { Text = "LAY", Action = [ "LeftCtrl", "L" ] },
+    { Text = "ZOM", Action = [ "Z" ] },
+    { Text = "EXP", Action = [ "LeftCtrl", "E" ] },
+    { Text = "SAV", Action = [ "LeftCtrl", "S" ] },
+]
