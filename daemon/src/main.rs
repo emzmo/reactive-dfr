@@ -1623,7 +1623,7 @@ fn emergency_mode(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) -> ! {
     backlight::force_on();
 
     let mut input_tb = Libinput::new_with_udev(Interface);
-    if input_tb.udev_assign_seat("seat-touchbar").is_err() {
+    if input_tb.udev_assign_seat("seat1").is_err() {
         loop {
             thread::sleep(Duration::from_secs(3600));
         }
@@ -1911,7 +1911,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
 
     let mut input_tb = Libinput::new_with_udev(Interface);
     let mut input_main = Libinput::new_with_udev(Interface);
-    input_tb.udev_assign_seat("seat-touchbar").unwrap();
+    input_tb.udev_assign_seat("seat1").unwrap();
     input_main.udev_assign_seat("seat0").unwrap();
     let udev_monitor = MonitorBuilder::new()
         .unwrap()
