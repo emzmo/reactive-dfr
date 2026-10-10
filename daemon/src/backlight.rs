@@ -96,7 +96,15 @@ fn find_display_backlight() -> Result<PathBuf> {
 }
 
 fn set_backlight(mut file: &File, value: u32) {
-    file.write_all(format!("{}\n", value).as_bytes()).unwrap();
+    if let Err(e) = file.write_all(format!("{}\n", value).as_bytes()) {
+        // The backlight sysfs file disappears during S3 suspend/resume
+        // when the T1 iBridge USB device is reset.  At that point all
+        // the daemon's fds (DRM, backlight) are stale and the only
+        // correct action is to exit so Restart=always + the open_card
+        // retry loop can restart with fresh fds.
+        eprintln!("reactive-dfr: backlight write failed: {e}, exiting for restart");
+        std::process::exit(1);
+    }
 }
 
 /// Best-effort: turn the Touch Bar backlight on. Used by the post-crash
@@ -129,19 +137,52 @@ pub struct BacklightManager {
 
 impl BacklightManager {
     pub fn new() -> BacklightManager {
-        let bl_path = find_backlight().unwrap();
+        // The backlight sysfs path can be missing during S3 resume while
+        // the T1 iBridge USB device re-enumerates.  Fall back to /dev/null
+        // and safe defaults so the daemon starts and retries via
+        // Restart=always rather than panic-looping.
+        let (bl_file, max_bl, current_bl) = match find_backlight() {
+            Ok(bl_path) => {
+                let file = OpenOptions::new()
+                    .write(true)
+                    .open(bl_path.join("brightness"));
+                match file {
+                    Ok(f) => (
+                        f,
+                        read_attr(&bl_path, "max_brightness"),
+                        read_attr(&bl_path, "brightness"),
+                    ),
+                    Err(e) => {
+                        eprintln!("reactive-dfr: backlight open failed: {e}; using /dev/null fallback");
+                        (
+                            File::create("/dev/null").unwrap_or_else(|_| {
+                                File::create("/tmp/reactive-dfr-bl-fallback").unwrap()
+                            }),
+                            255,
+                            128,
+                        )
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("reactive-dfr: backlight device not found: {e}; using fallback");
+                (
+                    File::create("/dev/null").unwrap_or_else(|_| {
+                        File::create("/tmp/reactive-dfr-bl-fallback").unwrap()
+                    }),
+                    255,
+                    128,
+                )
+            }
+        };
         let display_bl_path = find_display_backlight()
             .inspect_err(|e| eprintln!("Failed to find display backlight sysfs path: {e}"))
             .ok();
-        let bl_file = OpenOptions::new()
-            .write(true)
-            .open(bl_path.join("brightness"))
-            .unwrap();
         BacklightManager {
             bl_file,
             lid_state: SwitchState::Off,
-            max_bl: read_attr(&bl_path, "max_brightness"),
-            current_bl: read_attr(&bl_path, "brightness"),
+            max_bl,
+            current_bl,
             last_active: Instant::now(),
             display_bl_path,
             soft_dim_step: 0,

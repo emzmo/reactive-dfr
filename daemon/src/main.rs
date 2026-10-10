@@ -1666,7 +1666,29 @@ fn emergency_mode(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) -> ! {
 }
 
 fn main() {
-    let mut drm = DrmBackend::open_card().unwrap();
+    // Retry opening the DRM card for up to 60 seconds.  After S3
+    // suspend/resume the T1 iBridge USB device is reset and the DRM
+    // card may take several seconds to re-appear.  Without this loop
+    // the daemon panic-loops via Restart=always, flooding the journal.
+    let mut drm = None;
+    for attempt in 1..=30 {
+        match DrmBackend::open_card() {
+            Ok(card) => { drm = Some(card); break; }
+            Err(e) => {
+                if attempt == 1 || attempt % 10 == 0 {
+                    eprintln!("reactive-dfr: waiting for Touch Bar DRM card (attempt {attempt}/30): {e}");
+                }
+                std::thread::sleep(std::time::Duration::from_secs(2));
+            }
+        }
+    }
+    let mut drm = match drm {
+        Some(d) => d,
+        None => {
+            eprintln!("reactive-dfr: Touch Bar DRM card did not appear after 60s, exiting");
+            std::process::exit(1);
+        }
+    };
     let mut uinput = create_uinput();
     let _ = panic::catch_unwind(AssertUnwindSafe(|| real_main(&mut drm, &mut uinput)));
     emergency_mode(&mut drm, &mut uinput);
