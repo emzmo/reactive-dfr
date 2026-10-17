@@ -1,0 +1,37 @@
+# feeder_config.toml — configuration for the screensaver feeder widget
+#
+# Copy to ~/.config/reactive-dfr/feeder_config.toml and customize.
+# The feeder script (feeder.py) reads this file and rotates through
+# enabled modules, showing one item at a time on the Touch Bar.
+#
+# Each module produces items that are rotated sequentially. The feeder
+# advances to the next item on each call (every Interval seconds as
+# configured in the ScreensaverLayer).
+
+[news]
+enabled = true
+
+[[news.sources]]
+url = "https://feeds.bbci.co.uk/news/technology/rss.xml"
+count = 5
+prefix = "BBC Tech:"
+
+[[news.sources]]
+url = "https://hnrss.org/frontpage"
+count = 2
+prefix = "HN:"
+
+[crypto]
+enabled = true
+coins = ["BTC", "ETH"]
+prefix = ""
+
+[calendar]
+enabled = true
+app_cmd = "thunderbird"
+# Uses khal to read today's events. Install with: pip install khal
+
+[mail]
+enabled = true
+app_cmd = "thunderbird"
+# Placeholder: shows a reminder to check mail.
