@@ -1,0 +1,12 @@
+[Unit]
+Description=Touch Bar power monitor (screensaver toggle based on AC/battery)
+After=reactive-dfr.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 %h/Projects/mbp142/touchbar/reactive-dfr/context-daemon/scripts/power_monitor.py
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target
