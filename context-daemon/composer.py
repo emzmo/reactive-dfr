@@ -2,14 +2,15 @@
 """composer.py — generates reactive-dfr config.toml.
 
 Merges config/base.toml (global fields + Style + fixed layers) with
-the active context's layer (config/contexts/<name>.toml), then
-serializes to TOML using tomli_w and writes atomically (rename) to
-~/.config/reactive-dfr/config.toml, triggering reactive-dfr's
+the active context's layer (config/contexts/<name>.toml), appends a
+fixed minipanel (volume + brightness + keyboard backlight sliders),
+then serializes to TOML using tomli_w and writes atomically (rename)
+to ~/.config/reactive-dfr/config.toml, triggering reactive-dfr's
 inotify live-reload.
 
-The context provides a single [[layer]] (array of buttons) that replaces
-layer 0 in the Layers array.  Layers 1+ come from base.toml and are fixed
-(media keys, system monitor, etc.).
+Layer 0 = context buttons + minipanel (always visible).
+Layer 1 = F-keys (shown when fn is held).
+Layer 2 = system monitor (swipe).
 """
 
 import os
@@ -19,6 +20,32 @@ import tomli_w
 from pathlib import Path
 
 DEFAULT_OUT = str(Path.home() / ".config" / "reactive-dfr" / "config.toml")
+
+# The minipanel: always appended to the end of layer 0 so volume,
+# brightness, and keyboard backlight are always one tap away.
+MINIPANEL = [
+    {
+        "Icon": "volume_up",
+        "SliderGet": "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'",
+        "SliderSet": "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%",
+        "SliderMute": "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}",
+        "SliderMuteIcon": "volume_off",
+        "SliderLowIcon": "volume_down",
+        "SliderStretch": 3,
+    },
+    {
+        "Icon": "brightness_high",
+        "SliderGet": "brightnessctl -d acpi_video0 -m | awk -F, '{print $4}' | tr -d '%'",
+        "SliderSet": "systemd-run --user brightnessctl -d acpi_video0 set $(({} > 0 ? {} : 1))%",
+        "SliderStretch": 3,
+    },
+    {
+        "Icon": "backlight_high",
+        "SliderGet": "brightnessctl -d 'spi::kbd_backlight' -m | awk -F, '{print $4}' | tr -d '%'",
+        "SliderSet": "systemd-run --user brightnessctl -d 'spi::kbd_backlight' set {}%",
+        "SliderStretch": 3,
+    },
+]
 
 
 def _load_toml(path):
@@ -30,7 +57,7 @@ def compose(base_path, context_path):
     """Return the final config.toml as a string.
 
     base_path: path to base.toml (global fields, Style, fixed layers)
-    context_path: path to the active context .toml (provides layer 0)
+    context_path: path to the active context .toml (provides layer 0 buttons)
     """
     base = _load_toml(base_path)
     ctx = _load_toml(context_path)
@@ -47,6 +74,10 @@ def compose(base_path, context_path):
         else:
             ctx_layer = []
 
+    # Append the minipanel to the context layer so volume, brightness,
+    # and keyboard backlight are always visible at the right edge.
+    layer_0 = list(ctx_layer) + MINIPANEL
+
     # Start from base as the output dict
     out = {}
 
@@ -58,9 +89,9 @@ def compose(base_path, context_path):
             continue
         out[key] = val
 
-    # Build Layers: context layer 0 + base layers 1+
+    # Build Layers: context+minipanel as layer 0, base layers 1+
     base_layers = base.get("Layers", [])
-    out["Layers"] = [ctx_layer] + base_layers
+    out["Layers"] = [layer_0] + base_layers
 
     # Copy Style table
     if "Style" in base:

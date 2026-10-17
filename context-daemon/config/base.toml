@@ -1,28 +1,33 @@
 # base.toml — global config for reactive-dfr
-# Layer 0 is injected by the context daemon (compose replaces it).
-# Layers 1+ are fixed: media keys, system monitor, clock.
+# Layer 0 is injected by the context daemon (context buttons + minipanel).
+# Layers 1+ are fixed: F-keys (fn), system monitor (swipe).
 
 LayerSwipe = true
 ScrollLoop = true
-AdaptiveBrightness = true
+AdaptiveBrightness = false
+ActiveBrightness = 128
 DimTimeout = 30
 OffTimeout = 60
 
-# Fixed layers (layer 0 is replaced by the active context)
+# Fixed layers (layer 0 is replaced by the context daemon)
 Layers = [
-  # Layer 1 (index 1): Media keys + volume slider
+  # Layer 1 (index 1): F-keys — shown when fn is held
   [
     { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
-    { Icon = "brightness_low", Action = "BrightnessDown", OnClick = "Action" },
-    { Icon = "brightness_high", Action = "BrightnessUp", OnClick = "Action" },
-    { Icon = "backlight_low", Action = "IllumDown", OnClick = "Action" },
-    { Icon = "backlight_high", Action = "IllumUp", OnClick = "Action" },
-    { Icon = "fast_rewind", Action = "PreviousSong", OnClick = "Action" },
-    { Icon = "play_pause", Action = "PlayPause", OnClick = "Action" },
-    { Icon = "fast_forward", Action = "NextSong", OnClick = "Action" },
-    { Icon = "volume_up", SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'", SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%", SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}", SliderMuteIcon = "volume_off", SliderLowIcon = "volume_down", SliderStretch = 3 },
+    { Text = "F1", Action = "F1", OnClick = "Action" },
+    { Text = "F2", Action = "F2", OnClick = "Action" },
+    { Text = "F3", Action = "F3", OnClick = "Action" },
+    { Text = "F4", Action = "F4", OnClick = "Action" },
+    { Text = "F5", Action = "F5", OnClick = "Action" },
+    { Text = "F6", Action = "F6", OnClick = "Action" },
+    { Text = "F7", Action = "F7", OnClick = "Action" },
+    { Text = "F8", Action = "F8", OnClick = "Action" },
+    { Text = "F9", Action = "F9", OnClick = "Action" },
+    { Text = "F10", Action = "F10", OnClick = "Action" },
+    { Text = "F11", Action = "F11", OnClick = "Action" },
+    { Text = "F12", Action = "F12", OnClick = "Action" },
   ],
-  # Layer 2 (index 2): System monitor
+  # Layer 2 (index 2): System monitor + widgets
   [
     { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
     { Cpu = "celsius", Stretch = 2 },
@@ -31,12 +36,6 @@ Layers = [
     { Time = "%H:%M", Stretch = 2 },
     { Command = "sh ~/.config/reactive-dfr/widgets/ip.sh", Interval = 30, Stretch = 2, OnClick = "sh ~/.config/reactive-dfr/widgets/copy_ip.sh" },
     { Command = "sh ~/.config/reactive-dfr/widgets/cpu.sh", Interval = 3, Stretch = 2, OnClick = "Expand", ExpandCommand = "sh ~/.config/reactive-dfr/widgets/cpu_expand.sh", ExpandStretch = 4 },
-  ],
-  # Layer 3 (index 3): Clock + date
-  [
-    { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action" },
-    { Time = "%H:%M", Stretch = 3 },
-    { Time = "%a %d %b", Stretch = 3 },
   ],
 ]
 
