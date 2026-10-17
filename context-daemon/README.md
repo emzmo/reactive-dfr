@@ -1,4 +1,4 @@
-# touchbar-daemon — Touch Bar contextual layout daemon
+# reactive-dfr — Touch Bar contextual layout daemon
 
 Detects the active window and swaps the tiny-dfr Touch Bar layout on the fly,
 macOS-style: each app gets its own buttons.
@@ -32,7 +32,7 @@ backends/
 ## Layout de ficheros
 
 ```
-/etc/touchbar-daemon/config/
+/etc/reactive-dfr/config/
 ├── base.toml            # globales + MediaLayerKeys (capa Fn, fija)
 ├── matcher.toml         # class/title → contexto
 └── contexts/
@@ -56,8 +56,8 @@ backends/
 
 ```sh
 sudo install.sh          # instala scripts, config, CLI y unit; arranca el daemon
-systemctl --user status touchbar-daemon
-journalctl --user -u touchbar-daemon -f   # logs
+systemctl --user status reactive-dfr
+journalctl --user -u reactive-dfr -f   # logs
 python3 daemon.py --once                  # aplica el contexto actual y sale
 python3 daemon.py --backend sway          # fuerza Sway backend
 ```

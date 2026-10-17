@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # install.sh — instala el daemon contextual de la Touch Bar.
-#   Copia:  scripts -> /usr/local/lib/touchbar-daemon
-#           config  -> /etc/touchbar-daemon/config
-#           unit    -> ~/.config/systemd/user/touchbar-daemon.service
+#   Copia:  scripts -> /usr/local/lib/reactive-dfr
+#           config  -> /etc/reactive-dfr/config
+#           unit    -> ~/.config/systemd/user/reactive-dfr.service
 #   Permisos: cede /etc/tiny-dfr/config.toml al usuario (rename atómico)
 # Luego arranca la unit de usuario (sin sudo) y habilita el autostart.
 set -euo pipefail
 
 SRC="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-LIBDIR="/usr/local/lib/touchbar-daemon"
-CONFDIR="/etc/touchbar-daemon"
+LIBDIR="/usr/local/lib/reactive-dfr"
+CONFDIR="/etc/reactive-dfr"
 TARGET_USER="${SUDO_USER:-$USER}"
 TARGET_HOME="$(getent passwd "$TARGET_USER" | cut -d: -f6)"
-UNIT="$TARGET_HOME/.config/systemd/user/touchbar-daemon.service"
+UNIT="$TARGET_HOME/.config/systemd/user/reactive-dfr.service"
 
 # --- 1. scripts + CLI tool + backends ---
 install -d "$LIBDIR/backends"
@@ -40,7 +40,7 @@ fi
 
 # --- 4. unit systemd de usuario ---
 install -d "$TARGET_HOME/.config/systemd/user"
-sed -e "s|@LIBDIR@|$LIBDIR|g" "$SRC/touchbar-daemon.service.in" > "$UNIT"
+sed -e "s|@LIBDIR@|$LIBDIR|g" "$SRC/reactive-dfr.service.in" > "$UNIT"
 chown "$TARGET_USER:$TARGET_USER" "$TARGET_HOME/.config/systemd/user"
 
 echo "daemon instalado:"
@@ -64,7 +64,7 @@ else
 fi
 
 run_sysctl daemon-reload || echo "AVISO: daemon-reload fallo (bus de sesion inaccesible)"
-run_sysctl enable --now touchbar-daemon.service || echo "AVISO: no se pudo habilitar el servicio"
-run_sysctl status --no-pager touchbar-daemon.service || true
+run_sysctl enable --now reactive-dfr.service || echo "AVISO: no se pudo habilitar el servicio"
+run_sysctl status --no-pager reactive-dfr.service || true
 
 echo "hecho."

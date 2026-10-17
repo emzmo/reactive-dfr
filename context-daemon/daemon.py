@@ -9,14 +9,14 @@ Supports:
   - Sway/i3  (via swaymsg -t get_tree polling)
 
 Config:
-  /etc/touchbar-daemon/config/base.toml
-  /etc/touchbar-daemon/config/matcher.toml
-  /etc/touchbar-daemon/config/contexts/<name>.toml
+  /etc/reactive-dfr/config/base.toml
+  /etc/reactive-dfr/config/matcher.toml
+  /etc/reactive-dfr/config/contexts/<name>.toml
 
 Usage:
-  touchbar-daemon                # arranca el daemon
-  touchbar-daemon --once         # aplica el contexto actual y sale
-  touchbar-daemon --backend sway # fuerza un backend concreto
+  reactive-dfr                # arranca el daemon
+  reactive-dfr --once         # aplica el contexto actual y sale
+  reactive-dfr --backend sway # fuerza un backend concreto
 """
 
 import glob
@@ -29,7 +29,7 @@ import sys
 import time
 from pathlib import Path
 
-CONFIG_DIR = Path(os.environ.get("TOUCHBAR_CONFIG_DIR", str(Path.home() / ".config" / "touchbar-daemon" / "config")))
+CONFIG_DIR = Path(os.environ.get("TOUCHBAR_CONFIG_DIR", str(Path.home() / ".config" / "reactive-dfr")))
 BASE_PATH = CONFIG_DIR / "base.toml"
 MATCHER_PATH = CONFIG_DIR / "matcher.toml"
 CONTEXTS_DIR = CONFIG_DIR / "contexts"
@@ -39,7 +39,7 @@ from matcher import load_matcher, match_context
 from composer import compose, write_atomic
 from backends import detect_backend, HyprlandBackend, SwayBackend
 
-log = logging.getLogger("touchbar-daemon")
+log = logging.getLogger("reactive-dfr")
 
 # Polling interval for Sway/i3 (no event socket like Hyprland)
 POLL_INTERVAL = 1.0  # seconds

@@ -27,14 +27,14 @@ import sys
 import tomllib
 from pathlib import Path
 
-CONFIG_DIR = Path(os.environ.get("TOUCHBAR_CONFIG_DIR", "/etc/touchbar-daemon/config"))
+CONFIG_DIR = Path(os.environ.get("TOUCHBAR_CONFIG_DIR", "/etc/reactive-dfr/config"))
 CONTEXTS_DIR = CONFIG_DIR / "contexts"
 MATCHER_PATH = CONFIG_DIR / "matcher.toml"
 BASE_PATH = CONFIG_DIR / "base.toml"
 OUT_PATH = Path(os.environ.get("TOUCHBAR_OUT", "/etc/tiny-dfr/config.toml"))
 
 # Add the daemon lib dir to import path for composer/matcher
-LIB_DIR = Path(os.environ.get("TOUCHBAR_LIB_DIR", "/usr/local/lib/touchbar-daemon"))
+LIB_DIR = Path(os.environ.get("TOUCHBAR_LIB_DIR", "/usr/local/lib/reactive-dfr"))
 if LIB_DIR.exists():
     sys.path.insert(0, str(LIB_DIR))
 
