@@ -936,10 +936,11 @@ impl Button {
             }
             ButtonImage::Slider(s) => {
                 let color = self.text_color.unwrap_or(style.text_color);
-                // The icon reflects the control's state: the mute symbol while
-                // muted, the low symbol below the threshold, else the default.
-                // Each falls back to the default icon when not configured.
-                let icon = if s.muted {
+                // The icon reflects the control's state: the mute symbol
+                // while muted or at zero volume, the low symbol below the
+                // threshold, else the default. Each falls back to the
+                // default icon when not configured.
+                let icon = if s.muted || s.value == 0 {
                     s.muted_icon.as_ref().or(s.icon.as_ref())
                 } else if s.value < SLIDER_LOW_THRESHOLD {
                     s.low_icon.as_ref().or(s.icon.as_ref())

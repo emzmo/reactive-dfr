@@ -27,6 +27,8 @@ Icon = "volume_up"
 SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'"
 SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%"
 SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}"
+SliderMuteIcon = "volume_off"
+SliderLowIcon = "volume_down"
 SliderStretch = 3
 
 [[layer]]

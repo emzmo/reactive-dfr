@@ -275,7 +275,9 @@ enum TouchState {
     },
     /// Dragging an expanded slider: the finger owns the gesture (no scroll or
     /// swipe can start from it) and its x maps straight to the value.
-    SliderDrag { layer: usize, btn: usize },
+    /// `started_on_icon` is true when the touch-down was on the icon cap
+    /// (left of the track); a clean tap there toggles mute.
+    SliderDrag { layer: usize, btn: usize, started_on_icon: bool },
 }
 
 impl TouchState {
@@ -2018,7 +2020,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         let dragging: Vec<usize> = touches
             .values()
             .filter_map(|t| match *t {
-                TouchState::SliderDrag { layer, btn } => {
+                TouchState::SliderDrag { layer, btn, .. } => {
                     match &layers.get(layer)?.buttons.get(btn)?.1.image {
                         ButtonImage::Slider(s) => Some(s.id),
                         _ => None,
@@ -2086,7 +2088,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
             let fingered: Vec<(usize, usize)> = touches
                 .values()
                 .filter_map(|t| match *t {
-                    TouchState::SliderDrag { layer, btn } => Some((layer, btn)),
+                    TouchState::SliderDrag { layer, btn, .. } => Some((layer, btn)),
                     _ => None,
                 })
                 .collect();
@@ -2933,25 +2935,37 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                                         ) =>
                                 {
                                     if layer.is_expanded(btn) {
-                                        if let Some(v) = layer.slider_value_from_x(
-                                            btn,
-                                            x,
-                                            width as f64,
-                                            &cfg.style,
-                                            false,
-                                        ) {
-                                            if let Some((id, mute_arg)) =
-                                                layer.apply_slider_value(btn, v)
-                                            {
-                                                if let Some(arg) = mute_arg {
-                                                    widget_rt.set_slider_mute(id, arg);
+                                        let on_icon_cap = !layer
+                                            .slider_value_from_x(
+                                                btn,
+                                                x,
+                                                width as f64,
+                                                &cfg.style,
+                                                false,
+                                            )
+                                            .is_some();
+                                        if !on_icon_cap {
+                                            if let Some(v) = layer.slider_value_from_x(
+                                                btn,
+                                                x,
+                                                width as f64,
+                                                &cfg.style,
+                                                false,
+                                            ) {
+                                                if let Some((id, mute_arg)) =
+                                                    layer.apply_slider_value(btn, v)
+                                                {
+                                                    if let Some(arg) = mute_arg {
+                                                        widget_rt.set_slider_mute(id, arg);
+                                                    }
+                                                    widget_rt.set_slider(id, v);
                                                 }
-                                                widget_rt.set_slider(id, v);
                                             }
                                         } else {
-                                            // On the icon cap: keep it open,
-                                            // change nothing. Mute is reflected
-                                            // from the system, not toggled here.
+                                            // On the icon cap: keep it open.
+                                            // Mute toggle is handled on touch-up
+                                            // (a clean tap on the icon toggles
+                                            // mute via SliderMute).
                                             layer.touch_slider(btn);
                                         }
                                         touches.insert(
@@ -2959,6 +2973,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                                             TouchState::SliderDrag {
                                                 layer: active_layer,
                                                 btn,
+                                                started_on_icon: on_icon_cap,
                                             },
                                         );
                                     } else {
@@ -3237,7 +3252,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                                         needs_complete_redraw = true;
                                     }
                                 }
-                                TouchState::SliderDrag { layer, btn } => {
+                                TouchState::SliderDrag { layer, btn, .. } => {
                                     let l = &mut layers[layer];
                                     if let Some(v) =
                                         l.slider_value_from_x(btn, x, width as f64, &cfg.style, true)
@@ -3367,8 +3382,17 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                                 }
                                 TouchState::Pending { .. } => {}
                                 // Lifting off a slider restarts its idle
-                                // countdown from now.
-                                TouchState::SliderDrag { layer, btn } => {
+                                // countdown from now.  A clean tap on the
+                                // icon cap (started_on_icon, no movement)
+                                // toggles mute via the SliderMute command.
+                                TouchState::SliderDrag { layer, btn, started_on_icon } => {
+                                    if started_on_icon {
+                                        if let ButtonImage::Slider(s) = &layers[layer].buttons[btn].1.image {
+                                            if s.has_mute {
+                                                widget_rt.set_slider_mute(s.id, "toggle");
+                                            }
+                                        }
+                                    }
                                     layers[layer].touch_slider(btn);
                                 }
                                 TouchState::Scroll {

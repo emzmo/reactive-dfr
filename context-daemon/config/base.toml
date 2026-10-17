@@ -20,7 +20,7 @@ Layers = [
     { Icon = "fast_rewind", Action = "PreviousSong", OnClick = "Action" },
     { Icon = "play_pause", Action = "PlayPause", OnClick = "Action" },
     { Icon = "fast_forward", Action = "NextSong", OnClick = "Action" },
-    { Icon = "volume_up", SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'", SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%", SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}", SliderStretch = 3 },
+    { Icon = "volume_up", SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'", SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%", SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}", SliderMuteIcon = "volume_off", SliderLowIcon = "volume_down", SliderStretch = 3 },
   ],
   # Layer 2 (index 2): System monitor
   [
