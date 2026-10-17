@@ -72,6 +72,11 @@ where
                     backlight::dim_button(delta, value == 1);
                 }
             }
+            ButtonAction::ExitScreensaver => {
+                // No-op here: the state transition is handled in main.rs
+                // after toggle_keys returns. This match arm just prevents
+                // the action from being treated as a key event.
+            }
             ButtonAction::Key(kc) => emit(uinput, EventKind::Key, *kc as u16, value),
         }
     }

@@ -9,6 +9,20 @@ ActiveBrightness = 128
 DimTimeout = 30
 OffTimeout = 60
 
+# Screensaver mode: after this many seconds of Touch Bar inactivity,
+# the ScreensaverLayer is shown. 0 disables. A state file must exist
+# at ~/.config/reactive-dfr/state/screensaver_enabled for it to activate.
+ScreensaverTimeout = 30
+ScreensaverBrightness = 100
+
+# Screensaver layer: shown when the Touch Bar has been idle.
+# Must contain a button with Action = "ExitScreensaver" to exit via tap.
+ScreensaverLayer = [
+  { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action", Stretch = 1 },
+  { Text = "IDLE / FEEDER", Stretch = 10 },
+  { Text = "X", Action = "ExitScreensaver", Pinned = true, Stretch = 1 },
+]
+
 # Fixed layers (layer 0 is replaced by the context daemon)
 Layers = [
   # Layer 1 (index 1): F-keys — shown when fn is held

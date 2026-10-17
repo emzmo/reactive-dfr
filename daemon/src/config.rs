@@ -32,6 +32,12 @@ pub struct Config {
     pub dim_timeout: u32,
     /// Seconds of inactivity before turning the Touch Bar off; 0 disables it.
     pub off_timeout: u32,
+    /// Seconds of Touch Bar inactivity before entering screensaver mode; 0 disables it.
+    pub screensaver_timeout: u32,
+    /// Fixed brightness (0-255) for screensaver mode.
+    pub screensaver_brightness: u32,
+    /// Button configs for the screensaver layer (shown when idle).
+    pub screensaver_layer: Option<Vec<crate::config::ButtonConfig>>,
     /// Whether a vertical swipe on the bar slides between the two layers.
     pub layer_swipe: bool,
     /// Seconds to shift synced lyrics against the audio: positive shows each
@@ -59,6 +65,8 @@ const DEFAULT_ACTIVE_BRIGHTNESS: u32 = 128;
 const DEFAULT_DOUBLE_PRESS_SWITCH_LAYERS: u32 = 0;
 const DEFAULT_DIM_TIMEOUT: u32 = 30;
 const DEFAULT_OFF_TIMEOUT: u32 = 60;
+const DEFAULT_SCREENSAVER_TIMEOUT: u32 = 0;
+const DEFAULT_SCREENSAVER_BRIGHTNESS: u32 = 100;
 const DEFAULT_VISIBLE_BUTTONS: usize = 0;
 const DEFAULT_SCROLL_LOOP: bool = true;
 const DEFAULT_SCROLL_RUBBER_BAND: bool = true;
@@ -83,6 +91,8 @@ struct ConfigProxy {
     double_press_switch_layers: Option<u32>,
     dim_timeout: Option<u32>,
     off_timeout: Option<u32>,
+    screensaver_timeout: Option<u32>,
+    screensaver_brightness: Option<u32>,
     visible_buttons: Option<usize>,
     scroll_loop: Option<bool>,
     scroll_rubber_band: Option<bool>,
@@ -100,6 +110,10 @@ struct ConfigProxy {
     // them in order. When set (non-empty), this wins over PrimaryLayerKeys /
     // MediaLayerKeys / MediaLayerDefault.
     layers: Option<Vec<Vec<ButtonConfig>>>,
+    // A single layer shown when the Touch Bar has been idle for
+    // screensaver_timeout seconds. Must contain at least one button
+    // with Action = "ExitScreensaver" to leave the mode via tap.
+    screensaver_layer: Option<Vec<ButtonConfig>>,
 }
 
 impl ConfigProxy {
@@ -135,6 +149,15 @@ impl ConfigProxy {
         }
         if o.off_timeout.is_some() {
             self.off_timeout = o.off_timeout;
+        }
+        if o.screensaver_timeout.is_some() {
+            self.screensaver_timeout = o.screensaver_timeout;
+        }
+        if o.screensaver_brightness.is_some() {
+            self.screensaver_brightness = o.screensaver_brightness;
+        }
+        if o.screensaver_layer.is_some() {
+            self.screensaver_layer = o.screensaver_layer;
         }
         if o.visible_buttons.is_some() {
             self.visible_buttons = o.visible_buttons;
@@ -195,6 +218,7 @@ pub enum ButtonAction {
     Key(Key),
     TouchBarBrightnessUp,
     TouchBarBrightnessDown,
+    ExitScreensaver,
 }
 
 /// What a tap on a button does, chosen with the `OnClick` config key.
@@ -228,6 +252,7 @@ impl<'de> Deserialize<'de> for ButtonAction {
         match name.as_str() {
             "TouchBarBrightnessUp" => Ok(ButtonAction::TouchBarBrightnessUp),
             "TouchBarBrightnessDown" => Ok(ButtonAction::TouchBarBrightnessDown),
+            "ExitScreensaver" => Ok(ButtonAction::ExitScreensaver),
             _ => Key::deserialize(de::value::StrDeserializer::new(&name)).map(ButtonAction::Key),
         }
     }
@@ -260,7 +285,7 @@ where
     deserializer.deserialize_any(ArrayOrSingle)
 }
 
-#[derive(Deserialize, Default)]
+#[derive(Deserialize, Default, Clone)]
 #[serde(rename_all = "PascalCase")]
 pub struct ButtonConfig {
     #[serde(alias = "Svg")]
@@ -737,6 +762,9 @@ fn load_config(
             .unwrap_or(DEFAULT_DOUBLE_PRESS_SWITCH_LAYERS),
         dim_timeout: base.dim_timeout.unwrap_or(DEFAULT_DIM_TIMEOUT),
         off_timeout: base.off_timeout.unwrap_or(DEFAULT_OFF_TIMEOUT),
+        screensaver_timeout: base.screensaver_timeout.unwrap_or(DEFAULT_SCREENSAVER_TIMEOUT),
+        screensaver_brightness: base.screensaver_brightness.unwrap_or(DEFAULT_SCREENSAVER_BRIGHTNESS),
+        screensaver_layer: base.screensaver_layer.take(),
         layer_swipe: base.layer_swipe.unwrap_or(DEFAULT_LAYER_SWIPE),
         lyric_offset: base.lyric_offset.unwrap_or(DEFAULT_LYRIC_OFFSET),
         media_cover_blur: base

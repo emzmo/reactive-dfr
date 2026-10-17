@@ -123,6 +123,9 @@ pub struct BacklightManager {
     lid_state: SwitchState,
     bl_file: File,
     display_bl_path: Option<PathBuf>,
+    /// When true, dim/off timeouts are ignored (screensaver mode is
+    /// managing brightness instead).
+    disable_dim_off: bool,
     // Index into SOFT_DIM_FACTORS, moved by the TouchBarBrightness buttons.
     // Not persisted across daemon restarts.
     soft_dim_step: usize,
@@ -185,6 +188,7 @@ impl BacklightManager {
             current_bl,
             last_active: Instant::now(),
             display_bl_path,
+            disable_dim_off: false,
             soft_dim_step: 0,
             soft_dim_current: 1.0,
             soft_dim_anim_ts: Instant::now(),
@@ -219,8 +223,11 @@ impl BacklightManager {
     pub fn update_backlight(&mut self, cfg: &Config) {
         let idle_ms = (Instant::now() - self.last_active).as_millis() as u64;
         // Timeouts are in seconds; 0 disables that transition entirely.
-        let dim_ms = cfg.dim_timeout as u64 * 1000;
-        let off_ms = cfg.off_timeout as u64 * 1000;
+        // When disable_dim_off is set (screensaver enabled), dim and off
+        // are both treated as disabled so the bar stays at full brightness
+        // until the screensaver activates.
+        let dim_ms = if self.disable_dim_off { 0 } else { cfg.dim_timeout as u64 * 1000 };
+        let off_ms = if self.disable_dim_off { 0 } else { cfg.off_timeout as u64 * 1000 };
 
         let anim_now = Instant::now();
 
@@ -281,6 +288,20 @@ impl BacklightManager {
     }
     pub fn current_bl(&self) -> u32 {
         self.current_bl
+    }
+    /// The instant of the last touch/key activity on the Touch Bar.
+    pub fn last_active(&self) -> Instant {
+        self.last_active
+    }
+    /// Reset the inactivity timer — used when exiting screensaver mode.
+    pub fn reset_activity(&mut self) {
+        self.last_active = Instant::now();
+    }
+    /// Enable/disable dim and off timeouts. When the screensaver is
+    /// enabled (state file exists), dim/off are disabled so the bar
+    /// stays bright until the screensaver activates.
+    pub fn set_disable_dim_off(&mut self, disable: bool) {
+        self.disable_dim_off = disable;
     }
     pub fn soft_dim_factor(&self) -> f64 {
         self.soft_dim_current

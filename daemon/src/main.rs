@@ -280,6 +280,14 @@ enum TouchState {
     SliderDrag { layer: usize, btn: usize, started_on_icon: bool },
 }
 
+/// Whether the Touch Bar is in normal operation or showing the
+/// idle screensaver layer.
+#[derive(PartialEq)]
+enum ScreensaverState {
+    Normal,
+    Screensaver,
+}
+
 impl TouchState {
     /// Short label for NQTD_TOUCH_LOG diagnostics.
     fn name(&self) -> &'static str {
@@ -1933,6 +1941,30 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     let mut needs_complete_redraw = true;
     let mut last_soft_dim = 1.0;
 
+    // Screensaver state
+    let mut screensaver_state = ScreensaverState::Normal;
+    // Timer that only resets on Touch Bar touch events (not keyboard/mouse).
+    // The screensaver timeout compares against this, not backlight.last_active
+    // (which resets on any input including the physical keyboard).
+    let mut last_touchbar_interaction = Instant::now();
+    let mut screensaver_layer: Option<FunctionLayer> = if let Some(sl_btns) = &cfg.screensaver_layer {
+        if !sl_btns.is_empty() {
+            let mut widgets = Widgets::default();
+            let mut next_id = 0usize;
+            Some(FunctionLayer::with_config(
+                sl_btns.clone(),
+                &mut widgets,
+                &mut next_id,
+                cfg.style.icon_size.round() as i32,
+                0, false, false, true, true,
+            ))
+        } else { None }
+    } else { None };
+    let mut prev_active_layer = 0;
+    let screensaver_state_file = target_user.as_ref()
+        .map(|u| u.home.join(".config/reactive-dfr/state/screensaver_enabled"))
+        .unwrap_or_else(|| std::path::PathBuf::from("/tmp/reactive-dfr-screensaver-enabled"));
+
     let mut input_tb = Libinput::new_with_udev(Interface);
     let mut input_main = Libinput::new_with_udev(Interface);
     input_tb.udev_assign_seat("seat1").unwrap();
@@ -2010,8 +2042,36 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
             media::set_cover_blur(cfg.media_cover_blur);
             media::set_art_cache(cfg.media_art_cache);
             media::set_lyrics_cache(cfg.media_lyrics_cache);
-            active_layer = 0;
             needs_complete_redraw = true;
+            // Rebuild the screensaver layer from the new config.
+            if let Some(sl_btns) = &cfg.screensaver_layer {
+                if !sl_btns.is_empty() {
+                    let mut widgets = Widgets::default();
+                    let mut next_id = 0usize;
+                    screensaver_layer = Some(FunctionLayer::with_config(
+                        sl_btns.clone(), &mut widgets, &mut next_id,
+                        cfg.style.icon_size.round() as i32, 0, false, false, true, true,
+                    ));
+                } else {
+                    screensaver_layer = None;
+                }
+            } else {
+                screensaver_layer = None;
+            }
+            // If currently in screensaver, stay in screensaver.
+            // update_config replaced `layers` with the new config's
+            // layers (without the screensaver layer). Re-append the
+            // rebuilt screensaver layer and keep active_layer pointing
+            // to it so the user sees no disruption.
+            if screensaver_state == ScreensaverState::Screensaver {
+                if let Some(sl) = screensaver_layer.take() {
+                    layers.push(sl);
+                    active_layer = layers.len() - 1;
+                }
+                // Don't reset active_layer to 0 or exit screensaver.
+            } else {
+                active_layer = 0;
+            }
             // Replacing the runtime drops the old one, stopping its threads.
             widget_rt = WidgetRuntime::new(new_widgets, wake_write.clone());
         }
@@ -2804,7 +2864,20 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                     // Fn peeks at the next layer; with a single layer there is
                     // nothing to peek at (or swap to).
                     if key.key() == Key::Fn as u32 && layers.len() > 1 {
-                        if cfg.double_press_switch_layers > 0
+                        // If in screensaver mode, fn exits screensaver
+                        // without doing the normal layer switch.
+                        if screensaver_state == ScreensaverState::Screensaver {
+                            if key.key_state() == KeyState::Pressed {
+                                if let Some(sl) = layers.pop() {
+                                    screensaver_layer = Some(sl);
+                                }
+                                active_layer = prev_active_layer;
+                                screensaver_state = ScreensaverState::Normal;
+                                backlight.reset_activity();
+                                last_touchbar_interaction = Instant::now();
+                                needs_complete_redraw = true;
+                            }
+                        } else if cfg.double_press_switch_layers > 0
                             && key.key_state() == KeyState::Pressed
                         {
                             if last.elapsed()
@@ -2828,6 +2901,19 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                     if Some(te.device()) != digitizer || backlight.current_bl() == 0 {
                         continue;
                     }
+                    // Update the Touch Bar inactivity timer on any
+                    // touch-down. This is independent from the system
+                    // input timer (backlight.last_active) so typing on
+                    // the physical keyboard does not prevent the
+                    // screensaver from activating.
+                    if let TouchEvent::Down(_) = te {
+                        last_touchbar_interaction = Instant::now();
+                    }
+                    // In screensaver mode, touch events flow through
+                    // to normal button processing. Only the "X" button
+                    // (with Action = "ExitScreensaver") or the fn key
+                    // exit the screensaver. Other buttons (Esc, the
+                    // feeder text) work normally.
                     match te {
                         TouchEvent::Down(dn) => {
                             let x = dn.x_transformed(width as u32);
@@ -3374,9 +3460,24 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                                             if let Some(cmd) = button.tap_command.as_ref() {
                                                 media::run_tap_command(cmd);
                                             }
+                                            // Check for ExitScreensaver action before
+                                            // emitting (the action is a no-op in uinput,
+                                            // but triggers a state transition here).
+                                            let exit_ss = button.action.iter()
+                                                .any(|a| *a == ButtonAction::ExitScreensaver);
                                             button.emit_keys(uinput, true);
                                             button.emit_keys(uinput, false);
                                             button.set_visual_active(false);
+                                            if exit_ss && screensaver_state == ScreensaverState::Screensaver {
+                                                if let Some(sl) = layers.pop() {
+                                                    screensaver_layer = Some(sl);
+                                                }
+                                                active_layer = prev_active_layer;
+                                                screensaver_state = ScreensaverState::Normal;
+                                                backlight.reset_activity();
+                                                last_touchbar_interaction = Instant::now();
+                                                needs_complete_redraw = true;
+                                            }
                                         }
                                     }
                                 }
@@ -3509,6 +3610,34 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         if backlight.soft_dim_factor() != last_soft_dim {
             last_soft_dim = backlight.soft_dim_factor();
             needs_complete_redraw = true;
+        }
+
+        // Screensaver timeout check: only when configured and enabled.
+        // The state file is read ONLY when the timer expires (once per
+        // ~30s+), not on every frame — no performance impact.
+        if cfg.screensaver_timeout > 0 && screensaver_layer.is_some() {
+            let idle_secs = (Instant::now() - last_touchbar_interaction).as_secs();
+            // Check the state file only when the timeout has elapsed,
+            // and cache the result so dim/off stay disabled between
+            // checks while the screensaver is enabled.
+            if screensaver_state == ScreensaverState::Normal && idle_secs >= cfg.screensaver_timeout as u64 {
+                if screensaver_state_file.exists() {
+                    // Enter screensaver
+                    screensaver_state = ScreensaverState::Screensaver;
+                    prev_active_layer = active_layer;
+                    if let Some(sl) = screensaver_layer.take() {
+                        layers.push(sl);
+                        active_layer = layers.len() - 1;
+                        needs_complete_redraw = true;
+                    }
+                }
+            }
+            // Keep dim/off disabled while screensaver is configured
+            // and enabled (state file exists). Check once per second
+            // when idle, not every frame.
+            if idle_secs >= 1 && idle_secs % 5 == 0 {
+                backlight.set_disable_dim_off(screensaver_state_file.exists());
+            }
         }
     }
 }
