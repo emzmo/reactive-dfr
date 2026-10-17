@@ -1,0 +1,71 @@
+#!/bin/bash
+# recorder_sync.sh — generic USB device sync script
+#
+# Triggered by a udev rule when a specific USB device is connected.
+# Copies files from the device to a local directory, writing status
+# to a state file that the Touch Bar widget reads.
+#
+# SETUP:
+#   1. Copy this file to ~/.config/reactive-dfr/widgets/recorder_sync.sh
+#   2. Edit the CONFIGURATION section below with your device details
+#   3. Find your USB IDs with: lsusb
+#   4. Set up the udev rule (see 99-usb-sync.rules.template)
+#   5. Set up the systemd service (see recorder-sync.service.template)
+
+# ===== CONFIGURATION =====
+
+# USB_DEVICE_ID: Your device USB ID (find with lsusb)
+# Example: "054c:0cf7" for Sony IC Recorder
+USB_DEVICE_ID="VENDOR:PRODUCT"
+
+# MOUNT_PATH: Where the device gets mounted
+# Example: "/run/media/user/MEMORY CARD"
+MOUNT_PATH="/run/media/user/DEVICE"
+
+# SOURCE_DIR: Folder to copy FROM on the device
+# Example: "/run/media/user/DEVICE/PRIVATE/SONY/REC_FILE"
+SOURCE_DIR=""
+
+# DEST_DIR: Folder to copy TO on your PC
+# Example: "$HOME/Media/Audio/Recordings"
+DEST_DIR=""
+
+# STATE_FILE: Where to write sync status for the Touch Bar widget
+STATE_FILE="$HOME/.config/reactive-dfr/state/usb_sync.state"
+
+# ==========================
+
+# Wait for the device to be mounted (up to 30 seconds)
+for i in $(seq 1 30); do
+    if [ -d "$MOUNT_PATH" ]; then
+        break
+    fi
+    sleep 1
+done
+
+if [ ! -d "$MOUNT_PATH" ]; then
+    echo "error" > "$STATE_FILE"
+    sleep 15
+    rm -f "$STATE_FILE"
+    exit 1
+fi
+
+# Wait a bit for the mount to settle
+sleep 2
+
+# Write syncing status
+echo "syncing" > "$STATE_FILE"
+
+# Run the sync
+mkdir -p "$DEST_DIR"
+rsync -av --update "$SOURCE_DIR/" "$DEST_DIR/" 2>&1
+
+if [ $? -eq 0 ]; then
+    echo "done" > "$STATE_FILE"
+else
+    echo "error" > "$STATE_FILE"
+fi
+
+# Keep the status visible for 15 seconds, then clear it
+sleep 15
+rm -f "$STATE_FILE"

@@ -21,3 +21,7 @@ node_modules/
 .tmp_versions/
 Module.symvers
 modules.order
+
+# Personal USB sync config (do not commit)
+# recorder_sync.sh is personal — only the .template is committed
+context-daemon/widgets/recorder_sync.sh

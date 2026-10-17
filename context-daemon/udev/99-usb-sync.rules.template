@@ -1,0 +1,16 @@
+# 99-usb-sync.rules — udev rule to trigger USB sync on device connect
+#
+# When the specified USB device is plugged in, this rule starts the
+# recorder-sync systemd user service, which runs recorder_sync.sh
+# to copy files from the device to your PC.
+#
+# SETUP:
+#   1. Find your device IDs: lsusb
+#      Example: Bus 001 Device 005: ID 054c:0cf7 Sony IC Recorder
+#      → vendor=054c, product=0cf7
+#   2. Replace XXXX with your vendor ID and YYYY with your product ID
+#   3. Copy to /etc/udev/rules.d/99-recorder-sync.rules
+#   4. Reload: sudo udevadm control --reload-rules && sudo udevadm trigger
+
+ACTION=="add", ATTRS{idVendor}=="XXXX", ATTRS{idProduct}=="YYYY", \
+    TAG+="systemd", ENV{SYSTEMD_USER_WANTS}="recorder-sync.service"

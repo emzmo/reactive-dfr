@@ -1,0 +1,21 @@
+# recorder-sync.service — systemd user service for USB sync
+#
+# This service is triggered by a udev rule when a specific USB device
+# is connected. See recorder_sync.sh.template for configuration.
+#
+# SETUP:
+#   1. Copy to ~/.config/systemd/user/recorder-sync.service
+#   2. Ensure recorder_sync.sh is installed and configured at
+#      ~/.config/reactive-dfr/widgets/recorder_sync.sh
+#   3. Reload: systemctl --user daemon-reload
+#   4. Set up the udev rule (see 99-usb-sync.rules.template)
+
+[Unit]
+Description=USB device sync (copy files from device to PC)
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash %h/.config/reactive-dfr/widgets/recorder_sync.sh
+
+[Install]
+WantedBy=default.target

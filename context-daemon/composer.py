@@ -45,6 +45,11 @@ MINIPANEL = [
         "SliderSet": "systemd-run --user brightnessctl -d 'spi::kbd_backlight' set {}%",
         "SliderStretch": 3,
     },
+    {
+        "Command": "sh ~/.config/reactive-dfr/widgets/usb_sync.sh",
+        "Interval": 2,
+        "Stretch": 1,
+    },
 ]
 
 
