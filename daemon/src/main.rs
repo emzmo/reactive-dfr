@@ -5,6 +5,7 @@ use input::{
     event::{
         device::DeviceEvent,
         keyboard::{KeyState, KeyboardEvent, KeyboardEventTrait},
+        switch::{Switch, SwitchEvent, SwitchState, SwitchEventTrait},
         touch::{TouchEvent, TouchEventPosition, TouchEventSlot, TouchEventTrait},
         Event, EventTrait,
     },
@@ -1947,6 +1948,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     // The screensaver timeout compares against this, not backlight.last_active
     // (which resets on any input including the physical keyboard).
     let mut last_touchbar_interaction = Instant::now();
+    let mut last_ss_check = Instant::now();
     let mut screensaver_layer: Option<FunctionLayer> = if let Some(sl_btns) = &cfg.screensaver_layer {
         if !sl_btns.is_empty() {
             let mut widgets = Widgets::default();
@@ -2853,6 +2855,17 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         input_main.dispatch().unwrap();
         for event in &mut input_tb.clone().chain(input_main.clone()) {
             backlight.process_event(&event);
+            // Reset the Touch Bar idle timer when the lid is opened
+            // (the bar wakes with the laptop). The global last_active
+            // is already reset by process_event, but last_touchbar_interaction
+            // is local and needs explicit handling.
+            if let Event::Switch(SwitchEvent::Toggle(toggle)) = &event {
+                if let Some(Switch::Lid) = toggle.switch() {
+                    if toggle.switch_state() == SwitchState::Off {
+                        last_touchbar_interaction = Instant::now();
+                    }
+                }
+            }
             match event {
                 Event::Device(DeviceEvent::Added(evt)) => {
                     let dev = evt.device();
@@ -2864,6 +2877,12 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                     // Fn peeks at the next layer; with a single layer there is
                     // nothing to peek at (or swap to).
                     if key.key() == Key::Fn as u32 && layers.len() > 1 {
+                        // Fn is a Touch Bar interaction: reset the
+                        // idle timer so dim/off don't trigger while
+                        // the user is holding fn to peek at F-keys.
+                        if key.key_state() == KeyState::Pressed {
+                            last_touchbar_interaction = Instant::now();
+                        }
                         // If in screensaver mode, fn exits screensaver
                         // without doing the normal layer switch.
                         if screensaver_state == ScreensaverState::Screensaver {
@@ -2898,7 +2917,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                     }
                 }
                 Event::Touch(te) => {
-                    if Some(te.device()) != digitizer || backlight.current_bl() == 0 {
+                    if Some(te.device()) != digitizer {
                         continue;
                     }
                     // Update the Touch Bar inactivity timer on any
@@ -2908,6 +2927,14 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                     // screensaver from activating.
                     if let TouchEvent::Down(_) = te {
                         last_touchbar_interaction = Instant::now();
+                    }
+                    // When the bar is off (dim/off timeout), a touch
+                    // wakes it but doesn't activate buttons — the
+                    // touch is consumed as a wake gesture. The next
+                    // frame's update_backlight will see the reset
+                    // timer and restore brightness.
+                    if backlight.current_bl() == 0 {
+                        continue;
                     }
                     // In screensaver mode, touch events flow through
                     // to normal button processing. Only the "X" button
@@ -3605,38 +3632,61 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                 _ => {}
             }
         }
-        backlight.update_backlight(&cfg);
+        let touchbar_idle_ms = (Instant::now() - last_touchbar_interaction).as_millis() as u64;
+        backlight.update_backlight(&cfg, touchbar_idle_ms);
         // A soft-dim change re-scales every pixel, not just changed buttons.
         if backlight.soft_dim_factor() != last_soft_dim {
             last_soft_dim = backlight.soft_dim_factor();
             needs_complete_redraw = true;
         }
 
-        // Screensaver timeout check: only when configured and enabled.
-        // The state file is read ONLY when the timer expires (once per
-        // ~30s+), not on every frame — no performance impact.
-        if cfg.screensaver_timeout > 0 && screensaver_layer.is_some() {
+        // Screensaver logic.
+        if cfg.screensaver_timeout > 0 {
             let idle_secs = (Instant::now() - last_touchbar_interaction).as_secs();
-            // Check the state file only when the timeout has elapsed,
-            // and cache the result so dim/off stay disabled between
-            // checks while the screensaver is enabled.
-            if screensaver_state == ScreensaverState::Normal && idle_secs >= cfg.screensaver_timeout as u64 {
-                if screensaver_state_file.exists() {
-                    // Enter screensaver
-                    screensaver_state = ScreensaverState::Screensaver;
-                    prev_active_layer = active_layer;
-                    if let Some(sl) = screensaver_layer.take() {
-                        layers.push(sl);
-                        active_layer = layers.len() - 1;
+            let screensaver_enabled = screensaver_state_file.exists();
+
+            // Disable dim/off only while the screensaver is enabled.
+            // When the state file is removed (e.g. by the power monitor
+            // switching to battery), dim/off resume normal behavior.
+            backlight.set_disable_dim_off(screensaver_enabled);
+
+            // Enter screensaver only when enabled, idle, and we have
+            // a screensaver layer to show.
+            if screensaver_state == ScreensaverState::Normal
+                && screensaver_enabled
+                && screensaver_layer.is_some()
+                && idle_secs >= cfg.screensaver_timeout as u64
+            {
+                screensaver_state = ScreensaverState::Screensaver;
+                prev_active_layer = active_layer;
+                if let Some(sl) = screensaver_layer.take() {
+                    layers.push(sl);
+                    active_layer = layers.len() - 1;
+                    needs_complete_redraw = true;
+                }
+            }
+
+            // Hot-transition: while in screensaver, poll the state file
+            // every ~5s. If it was removed (e.g. by the power monitor
+            // switching to battery), exit screensaver and start the
+            // normal dim/off timer from zero.
+            // This check runs regardless of screensaver_layer.is_some()
+            // because when in screensaver the layer is in `layers`, not
+            // in `screensaver_layer`.
+            if screensaver_state == ScreensaverState::Screensaver {
+                if last_ss_check.elapsed() >= Duration::from_secs(5) {
+                    last_ss_check = Instant::now();
+                    if !screensaver_state_file.exists() {
+                        if let Some(sl) = layers.pop() {
+                            screensaver_layer = Some(sl);
+                        }
+                        active_layer = prev_active_layer;
+                        screensaver_state = ScreensaverState::Normal;
+                        backlight.reset_activity();
+                        last_touchbar_interaction = Instant::now();
                         needs_complete_redraw = true;
                     }
                 }
-            }
-            // Keep dim/off disabled while screensaver is configured
-            // and enabled (state file exists). Check once per second
-            // when idle, not every frame.
-            if idle_secs >= 1 && idle_secs % 5 == 0 {
-                backlight.set_disable_dim_off(screensaver_state_file.exists());
             }
         }
     }

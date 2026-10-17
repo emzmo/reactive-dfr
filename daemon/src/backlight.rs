@@ -220,8 +220,8 @@ impl BacklightManager {
             _ => {}
         }
     }
-    pub fn update_backlight(&mut self, cfg: &Config) {
-        let idle_ms = (Instant::now() - self.last_active).as_millis() as u64;
+    pub fn update_backlight(&mut self, cfg: &Config, touchbar_idle_ms: u64) {
+        let idle_ms = touchbar_idle_ms;
         // Timeouts are in seconds; 0 disables that transition entirely.
         // When disable_dim_off is set (screensaver enabled), dim and off
         // are both treated as disabled so the bar stays at full brightness
