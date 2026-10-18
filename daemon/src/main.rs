@@ -1996,7 +1996,7 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     let mut last_touchbar_interaction = Instant::now();
     let mut last_ss_check = Instant::now();
     let mut prev_active_layer = 0;
-    let screensaver_state_file = target_user.as_ref()
+    let mut screensaver_state_file = target_user.as_ref()
         .map(|u| u.home.join(".config/reactive-dfr/state/screensaver_enabled"))
         .unwrap_or_else(|| std::path::PathBuf::from("/tmp/reactive-dfr-screensaver-enabled"));
 
@@ -2060,6 +2060,11 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                 cfg_mgr.add_path(dir.join("config.toml"));
                 drop_privileges(&u.name, &groups);
                 privileges_dropped = true;
+                // Update the screensaver state file path now that we
+                // know the user's home directory. Before the deferred
+                // login, this pointed to a /tmp fallback that never
+                // matched the real state file.
+                screensaver_state_file = u.home.join(".config/reactive-dfr/state/screensaver_enabled");
                 let (new_cfg, new_layers, new_widgets) = cfg_mgr.load_config();
                 cfg = new_cfg;
                 layers = new_layers;
