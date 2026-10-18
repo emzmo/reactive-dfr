@@ -19,7 +19,7 @@ ScreensaverBrightness = 100
 # Must contain a button with Action = "ExitScreensaver" to exit via tap.
 ScreensaverLayer = [
   { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action", Stretch = 1 },
-  { Command = "python3 ~/.config/reactive-dfr/widgets/feeder.py", Interval = 5, Stretch = 10, OnClick = "systemd-run --user bash -c '$(cat ${CACHE_DIRECTORY:-/var/cache/reactive-dfr}/feeder_action.txt)'" },
+  { Command = "python3 ~/.config/reactive-dfr/widgets/feeder.py", Interval = 5, Stretch = 10, OnClick = "sh ~/.config/reactive-dfr/widgets/feeder_click.sh" },
   { Text = "X", Action = "ExitScreensaver", Pinned = true, Stretch = 1 },
 ]
 
