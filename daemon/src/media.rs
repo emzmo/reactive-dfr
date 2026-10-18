@@ -102,7 +102,26 @@ pub fn control(verb: &str) {
 pub fn run_tap_command(command: &str) {
     let command = command.to_string();
     thread::spawn(move || {
-        if let Err(e) = Command::new("sh").arg("-c").arg(&command).status() {
+        let mut cmd = Command::new("sh");
+        cmd.arg("-c").arg(&command);
+        // Ensure HOME, DBUS, and Wayland are available so OnClick
+        // commands like xdg-open and wl-copy work from the daemon's
+        // system-service context.
+        if let Ok(home) = std::env::var("HOME") {
+            if !home.is_empty() {
+                cmd.env("HOME", home);
+            }
+        }
+        if let Ok(dbus) = std::env::var("DBUS_SESSION_BUS_ADDRESS") {
+            cmd.env("DBUS_SESSION_BUS_ADDRESS", dbus);
+        }
+        if let Ok(wayland) = std::env::var("WAYLAND_DISPLAY") {
+            cmd.env("WAYLAND_DISPLAY", wayland);
+        }
+        if let Ok(xdg) = std::env::var("XDG_RUNTIME_DIR") {
+            cmd.env("XDG_RUNTIME_DIR", xdg);
+        }
+        if let Err(e) = cmd.status() {
             eprintln!("reactive-dfr: failed to run OnClick command {command:?}: {e}");
         }
     });

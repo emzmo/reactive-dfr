@@ -25,9 +25,9 @@ from pathlib import Path
 
 # Paths
 CONFIG_PATH = Path.home() / ".config" / "reactive-dfr" / "feeder_config.toml"
-STATE_PATH = Path("/tmp/reactive_dfr_feeder_state.txt")
-ACTION_PATH = Path("/tmp/reactive_dfr_feeder_action.txt")
-CACHE_DIR = Path.home() / ".cache" / "reactive_dfr_feeder"
+STATE_PATH = Path(os.environ.get("CACHE_DIRECTORY", "/var/cache/reactive-dfr")) / "feeder_state.txt"
+ACTION_PATH = Path(os.environ.get("CACHE_DIRECTORY", "/var/cache/reactive-dfr")) / "feeder_action.txt"
+CACHE_DIR = Path(os.environ.get("CACHE_DIRECTORY", "/var/cache/reactive-dfr")) / "feeder_cache"
 CACHE_TTL = 600  # 10 minutes
 
 # CoinGecko coin ID mapping (universal symbol -> CG API id)

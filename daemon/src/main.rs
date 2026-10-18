@@ -1584,7 +1584,35 @@ fn drop_privileges(user: &str, groups: &[&str]) {
     // XDG_RUNTIME_DIR, and scripts expect ~ to be the user's home, not root's.
     if let Some(u) = u {
         std::env::set_var("HOME", &u.dir);
-        std::env::set_var("XDG_RUNTIME_DIR", format!("/run/user/{}", u.uid.as_raw()));
+        let uid = u.uid.as_raw();
+        let xdg_rt = format!("/run/user/{uid}");
+        std::env::set_var("XDG_RUNTIME_DIR", &xdg_rt);
+        std::env::set_var("DBUS_SESSION_BUS_ADDRESS", format!("unix:path={xdg_rt}/bus"));
+        // Wayland display: Hyprland typically uses wayland-1; try common names.
+        let wayland_candidates = ["wayland-1", "wayland-0"];
+        for wl in &wayland_candidates {
+            let p = std::path::Path::new(&xdg_rt).join(wl);
+            if p.exists() {
+                std::env::set_var("WAYLAND_DISPLAY", wl);
+                break;
+            }
+        }
+        // Extend PATH to include common user bin locations so widget
+        // scripts can find python3, brightnessctl, wpctl, etc.
+        let current_path = std::env::var("PATH").unwrap_or_default();
+        let extra_paths = [
+            "/usr/local/bin",
+            "/usr/bin",
+            "/home/emzmo/.local/bin",
+            "/home/emzmo/.cargo/bin",
+        ];
+        let mut parts: Vec<&str> = current_path.split(':').collect();
+        for p in &extra_paths {
+            if !parts.contains(p) {
+                parts.push(p);
+            }
+        }
+        std::env::set_var("PATH", parts.join(":"));
     }
 }
 
@@ -1926,14 +1954,32 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     // Now-playing media polling (playerctl / MPRIS): same wake-pipe pattern as
     // the battery/CPU pollers. Harmless when there is no player (reports Idle).
     media::spawn_poller(wake_write.clone());
-    let mut widget_rt = WidgetRuntime::new(
-        if privileges_dropped {
-            initial_widgets
-        } else {
-            Widgets::default()
-        },
-        wake_write.clone(),
-    );
+    // Build the screensaver layer using the same Widgets struct and
+    // ID sequence as the regular layers. This is critical: the
+    // WidgetRuntime must know about the screensaver's Command widgets
+    // to run their scripts. If the screensaver layer is built with a
+    // separate Widgets/next_id, the widget IDs collide with regular
+    // layer widgets and the runtime never executes the screensaver
+    // commands (showing stale output from a different widget).
+    let ss_next_id = initial_widgets.commands.iter().map(|s| s.id).max().map(|m| m + 1).unwrap_or(0);
+    let mut ss_widgets = if privileges_dropped {
+        initial_widgets
+    } else {
+        Widgets::default()
+    };
+    let mut screensaver_layer: Option<FunctionLayer> = if let Some(sl_btns) = &cfg.screensaver_layer {
+        if !sl_btns.is_empty() {
+            let mut next_id = ss_next_id;
+            Some(FunctionLayer::with_config(
+                sl_btns.clone(),
+                &mut ss_widgets,
+                &mut next_id,
+                cfg.style.icon_size.round() as i32,
+                0, false, false, true, true,
+            ))
+        } else { None }
+    } else { None };
+    let mut widget_rt = WidgetRuntime::new(ss_widgets, wake_write.clone());
     let mut last_user_poll = Instant::now();
 
     let mut surface =
@@ -1949,19 +1995,6 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     // (which resets on any input including the physical keyboard).
     let mut last_touchbar_interaction = Instant::now();
     let mut last_ss_check = Instant::now();
-    let mut screensaver_layer: Option<FunctionLayer> = if let Some(sl_btns) = &cfg.screensaver_layer {
-        if !sl_btns.is_empty() {
-            let mut widgets = Widgets::default();
-            let mut next_id = 0usize;
-            Some(FunctionLayer::with_config(
-                sl_btns.clone(),
-                &mut widgets,
-                &mut next_id,
-                cfg.style.icon_size.round() as i32,
-                0, false, false, true, true,
-            ))
-        } else { None }
-    } else { None };
     let mut prev_active_layer = 0;
     let screensaver_state_file = target_user.as_ref()
         .map(|u| u.home.join(".config/reactive-dfr/state/screensaver_enabled"))
@@ -2039,19 +2072,21 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                 widget_rt = WidgetRuntime::new(new_widgets, wake_write.clone());
             }
         }
-        if let Some(new_widgets) = cfg_mgr.update_config(&mut cfg, &mut layers) {
+        if let Some(mut new_widgets) = cfg_mgr.update_config(&mut cfg, &mut layers) {
             media::set_lyric_offset(cfg.lyric_offset);
             media::set_cover_blur(cfg.media_cover_blur);
             media::set_art_cache(cfg.media_art_cache);
             media::set_lyrics_cache(cfg.media_lyrics_cache);
             needs_complete_redraw = true;
             // Rebuild the screensaver layer from the new config.
+            // Must use the same Widgets struct as the regular layers
+            // so the WidgetRuntime runs the screensaver's commands.
+            let ss_next_id = new_widgets.commands.iter().map(|s| s.id).max().map(|m| m + 1).unwrap_or(0);
             if let Some(sl_btns) = &cfg.screensaver_layer {
                 if !sl_btns.is_empty() {
-                    let mut widgets = Widgets::default();
-                    let mut next_id = 0usize;
+                    let mut next_id = ss_next_id;
                     screensaver_layer = Some(FunctionLayer::with_config(
-                        sl_btns.clone(), &mut widgets, &mut next_id,
+                        sl_btns.clone(), &mut new_widgets, &mut next_id,
                         cfg.style.icon_size.round() as i32, 0, false, false, true, true,
                     ));
                 } else {

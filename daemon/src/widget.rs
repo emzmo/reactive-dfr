@@ -3,6 +3,7 @@ use libc::c_void;
 use serde::Deserialize;
 use std::{
     collections::HashMap,
+    env,
     io::Read,
     os::fd::{AsRawFd, OwnedFd, RawFd},
     process::{Command, Stdio},
@@ -343,14 +344,28 @@ fn sleep_until(deadline: Instant, stop: &AtomicBool) {
 
 /// Run `sh -c <command>`, returning its parsed output and whether it exited
 /// zero. Kills the child if it exceeds the timeout or the runtime is stopping.
+///
+/// The child inherits a minimal environment with HOME and PATH set from
+/// the daemon's resolved user, so that `~` expansion works in commands
+/// and common binaries (python3, wpctl, brightnessctl) are found.
 fn run_command(command: &str, stop: &AtomicBool) -> (WidgetOutput, bool) {
-    let child = Command::new("sh")
-        .arg("-c")
+    let mut cmd = Command::new("sh");
+    cmd.arg("-c")
         .arg(command)
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn();
+        .stderr(Stdio::null());
+
+    // Ensure HOME is set so `~` expands correctly in widget scripts.
+    // The daemon runs as a system service where HOME may be unset;
+    // without this, `python3 ~/script.py` fails silently.
+    if let Ok(home) = env::var("HOME") {
+        if !home.is_empty() {
+            cmd.env("HOME", home);
+        }
+    }
+
+    let child = cmd.spawn();
     let mut child = match child {
         Ok(c) => c,
         Err(e) => {
