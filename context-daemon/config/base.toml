@@ -5,7 +5,7 @@
 LayerSwipe = true
 ScrollLoop = true
 AdaptiveBrightness = false
-ActiveBrightness = 128
+ActiveBrightness = 75
 DimTimeout = 30
 OffTimeout = 60
 
@@ -21,6 +21,15 @@ ScreensaverLayer = [
   { Text = "esc", Action = "Esc", Pinned = true, OnClick = "Action", Stretch = 1 },
   { Command = "python3 ~/.config/reactive-dfr/widgets/feeder.py", Interval = 5, Stretch = 10, OnClick = "sh ~/.config/reactive-dfr/widgets/feeder_click.sh" },
   { Text = "X", Action = "ExitScreensaver", Pinned = true, Stretch = 1 },
+]
+
+# Minipanel: buttons always visible at the right edge of layer 0,
+# regardless of which app context is active. Edit, reorder, add,
+# or remove buttons here to customize the always-on controls.
+Minipanel = [
+  { Icon = "volume_up", SliderGet = "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'", SliderSet = "wpctl set-volume -l 1.0 @DEFAULT_AUDIO_SINK@ {}%", SliderMute = "wpctl set-mute @DEFAULT_AUDIO_SINK@ {}", SliderMuteIcon = "volume_off", SliderLowIcon = "volume_down", SliderStretch = 3 },
+  { Icon = "brightness_high", SliderGet = "brightnessctl -d acpi_video0 -m | awk -F, '{print $4}' | tr -d '%'", SliderSet = "systemd-run --user brightnessctl -d acpi_video0 set $(({} > 0 ? {} : 1))%", SliderStretch = 3 },
+  { Icon = "backlight_high", SliderGet = "brightnessctl -d 'spi::kbd_backlight' -m | awk -F, '{print $4}' | tr -d '%'", SliderSet = "systemd-run --user brightnessctl -d 'spi::kbd_backlight' set {}%", SliderStretch = 3 },
 ]
 
 # Fixed layers (layer 0 is replaced by the context daemon)

@@ -21,9 +21,11 @@ from pathlib import Path
 
 DEFAULT_OUT = str(Path.home() / ".config" / "reactive-dfr" / "config.toml")
 
-# The minipanel: always appended to the end of layer 0 so volume,
-# brightness, and keyboard backlight are always one tap away.
-MINIPANEL = [
+# The minipanel is read from base.toml's `Minipanel` key at compose
+# time. This keeps the always-on controls (volume, brightness, etc.)
+# configurable without editing Python code. A hardcoded fallback is
+# used only if base.toml doesn't define one.
+MINIPANEL_FALLBACK = [
     {
         "Icon": "volume_up",
         "SliderGet": "wpctl get-volume @DEFAULT_AUDIO_SINK@ | awk '{print int($2*100) ($3==\"[MUTED]\" ? \" muted\" : \"\")}'",
@@ -32,23 +34,6 @@ MINIPANEL = [
         "SliderMuteIcon": "volume_off",
         "SliderLowIcon": "volume_down",
         "SliderStretch": 3,
-    },
-    {
-        "Icon": "brightness_high",
-        "SliderGet": "brightnessctl -d acpi_video0 -m | awk -F, '{print $4}' | tr -d '%'",
-        "SliderSet": "systemd-run --user brightnessctl -d acpi_video0 set $(({} > 0 ? {} : 1))%",
-        "SliderStretch": 3,
-    },
-    {
-        "Icon": "backlight_high",
-        "SliderGet": "brightnessctl -d 'spi::kbd_backlight' -m | awk -F, '{print $4}' | tr -d '%'",
-        "SliderSet": "systemd-run --user brightnessctl -d 'spi::kbd_backlight' set {}%",
-        "SliderStretch": 3,
-    },
-    {
-        "Command": "sh ~/.config/reactive-dfr/widgets/usb_sync.sh",
-        "Interval": 2,
-        "Stretch": 1,
     },
 ]
 
@@ -81,7 +66,9 @@ def compose(base_path, context_path):
 
     # Append the minipanel to the context layer so volume, brightness,
     # and keyboard backlight are always visible at the right edge.
-    layer_0 = list(ctx_layer) + MINIPANEL
+    # The minipanel is configurable in base.toml under [Minipanel].
+    minipanel = base.get("Minipanel", MINIPANEL_FALLBACK)
+    layer_0 = list(ctx_layer) + list(minipanel)
 
     # Start from base as the output dict
     out = {}
@@ -91,6 +78,8 @@ def compose(base_path, context_path):
         if key == "Layers":
             continue
         if key == "Style":
+            continue
+        if key == "Minipanel":
             continue
         out[key] = val
 
