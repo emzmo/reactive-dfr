@@ -1,0 +1,102 @@
+#!/bin/bash
+#
+# reactive-dfr-setup — deploy user config and widgets to ~/.config/reactive-dfr/
+#
+# Run this as your user (not sudo) after installing reactive-dfr
+# via PKGBUILD or install.sh.
+#
+# Copies config from /etc/reactive-dfr/config/ and widgets from
+# /usr/lib/reactive-dfr/context-daemon/widgets/ to your home.
+# Does NOT overwrite existing personal customizations.
+
+set -euo pipefail
+
+ETC_CONFIG="/etc/reactive-dfr/config"
+SYS_WIDGETS="/usr/lib/reactive-dfr/context-daemon/widgets"
+USER_DIR="${HOME}/.config/reactive-dfr"
+
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+info() { echo -e "${GREEN}[INFO]${NC}  $*"; }
+warn() { echo -e "${YELLOW}[WARN]${NC}  $*"; }
+
+# Check that the system install exists
+if [ ! -f "${ETC_CONFIG}/base.toml" ]; then
+    echo "Error: reactive-dfr is not installed (no ${ETC_CONFIG}/base.toml)" >&2
+    echo "Install it first: paru -S reactive-dfr  OR  sudo ./install.sh install" >&2
+    exit 1
+fi
+
+if [ "$EUID" -eq 0 ]; then
+    echo "Run as your user, not sudo: reactive-dfr-setup" >&2
+    exit 1
+fi
+
+echo "Deploying reactive-dfr user config to ${USER_DIR}/"
+echo ""
+
+mkdir -p "${USER_DIR}/contexts" "${USER_DIR}/widgets" "${USER_DIR}/state"
+
+# Config files (don't overwrite)
+for f in base.toml matcher.toml; do
+    if [ ! -f "${USER_DIR}/${f}" ]; then
+        cp "${ETC_CONFIG}/${f}" "${USER_DIR}/${f}"
+        info "Copied: ${f}"
+    else
+        warn "Exists, not overwritten: ${f}"
+    fi
+done
+
+# Context configs (don't overwrite)
+for f in "${ETC_CONFIG}/contexts/"*.toml; do
+    name="$(basename "$f")"
+    if [ ! -f "${USER_DIR}/contexts/${name}" ]; then
+        cp "$f" "${USER_DIR}/contexts/${name}"
+        info "Copied: contexts/${name}"
+    else
+        warn "Exists, not overwritten: contexts/${name}"
+    fi
+done
+
+# Widgets (don't overwrite personal ones)
+if [ -d "$SYS_WIDGETS" ]; then
+    for f in "$SYS_WIDGETS"/*; do
+        [ -f "$f" ] || continue
+        name="$(basename "$f")"
+        case "$name" in
+            *.template) continue ;;
+        esac
+        if [ ! -f "${USER_DIR}/widgets/${name}" ]; then
+            cp "$f" "${USER_DIR}/widgets/${name}"
+            chmod +x "${USER_DIR}/widgets/${name}" 2>/dev/null || true
+            info "Copied: widgets/${name}"
+        else
+            warn "Exists, not overwritten: widgets/${name}"
+        fi
+    done
+fi
+
+# Feeder config from template
+if [ ! -f "${USER_DIR}/feeder_config.toml" ]; then
+    if [ -f "${SYS_WIDGETS}/feeder_config.toml.template" ]; then
+        cp "${SYS_WIDGETS}/feeder_config.toml.template" \
+           "${USER_DIR}/feeder_config.toml"
+        info "Copied: feeder_config.toml (from template — edit to customize)"
+    fi
+else
+    warn "Exists, not overwritten: feeder_config.toml"
+fi
+
+# Enable user services
+echo ""
+info "Enabling user services..."
+systemctl --user daemon-reload
+systemctl --user enable --now touchbar-ctx.service 2>/dev/null || warn "Could not enable touchbar-ctx.service"
+systemctl --user enable --now touchbar-power-monitor.service 2>/dev/null || warn "Could not enable touchbar-power-monitor.service"
+
+echo ""
+echo -e "${GREEN}Setup complete!${NC}"
+echo "Enable the system service: sudo systemctl enable reactive-dfr.service"
+echo "Then reboot to activate the Touch Bar."

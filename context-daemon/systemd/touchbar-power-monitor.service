@@ -4,7 +4,7 @@ After=reactive-dfr.service
 
 [Service]
 Type=simple
-ExecStart=/usr/bin/python3 %h/Projects/reactive-dfr/context-daemon/scripts/power_monitor.py
+ExecStart=/usr/bin/python3 /usr/lib/reactive-dfr/context-daemon/scripts/power_monitor.py
 Restart=always
 RestartSec=5
 

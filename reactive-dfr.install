@@ -1,0 +1,47 @@
+# reactive-dfr install hooks
+
+post_install() {
+    cat << 'EOF'
+
+==> reactive-dfr installed.
+==>
+==> The render daemon is enabled automatically:
+==>   sudo systemctl enable reactive-dfr.service
+==>
+==> To complete setup, deploy user config and enable user services:
+==>   reactive-dfr-setup
+==>   systemctl --user enable --now touchbar-ctx.service
+==>   systemctl --user enable --now touchbar-power-monitor.service
+==>
+==> Then reboot to activate the Touch Bar.
+==>
+==> User config and widgets are deployed to ~/.config/reactive-dfr/
+==> Personalize feeder_config.toml with your RSS feeds and crypto IDs.
+
+EOF
+}
+
+post_upgrade() {
+    cat << 'EOF'
+
+==> reactive-dfr updated.
+==>
+==> System config in /etc/reactive-dfr/ was updated.
+==> User config in ~/.config/reactive-dfr/ is NOT overwritten.
+==>
+==> To sync new default widgets, run: reactive-dfr-setup
+
+EOF
+}
+
+post_remove() {
+    cat << 'EOF'
+
+==> reactive-dfr removed.
+==>
+==> System components uninstalled. User config at
+==> ~/.config/reactive-dfr/ was NOT removed (personal data).
+==> Remove manually if desired: rm -rf ~/.config/reactive-dfr/
+
+EOF
+}
