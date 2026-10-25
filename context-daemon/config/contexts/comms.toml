@@ -1,13 +1,46 @@
 # comms.toml — mensajería: enviar, adjuntar, búsqueda, mute
 
-PrimaryLayerKeys = [
-    { Text = "⏎",   Action = "Enter" },
-    { Text = "📎",   Action = [ "LeftCtrl", "U" ] },
-    { Text = "🔍",   Action = [ "LeftCtrl", "F" ] },
-    { Text = "🎤",   Action = [ "LeftCtrl", "LeftShift", "M" ] },
-    { Text = "📷",   Action = [ "LeftCtrl", "LeftShift", "V" ] },
-    { Text = "Esc", Action = "Esc" },
-    { Text = "↹",   Action = "Tab" },
-    { Text = "↑",   Action = "Up" },
-    { Text = "↓",   Action = "Down" }
-]
+[[layer]]
+Text = "⏎"
+Action = "Enter"
+OnClick = "Action"
+
+[[layer]]
+Text = "📎"
+Action = [ "LeftCtrl", "U" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "🔍"
+Action = [ "LeftCtrl", "F" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "🎤"
+Action = [ "LeftCtrl", "LeftShift", "M" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "📷"
+Action = [ "LeftCtrl", "LeftShift", "V" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Esc"
+Action = "Esc"
+OnClick = "Action"
+
+[[layer]]
+Text = "↹"
+Action = "Tab"
+OnClick = "Action"
+
+[[layer]]
+Text = "↑"
+Action = "Up"
+OnClick = "Action"
+
+[[layer]]
+Text = "↓"
+Action = "Down"
+OnClick = "Action"

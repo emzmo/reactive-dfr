@@ -1,17 +1,62 @@
 # ide.toml — IDE / code editor: build, run, debug, navigation
 # Works with VS Code, VSCodium, Neovim, JetBrains (via keymap), etc.
 
-PrimaryLayerKeys = [
-    { Text = "Build", Action = [ "LeftCtrl", "LeftShift", "B" ] },
-    { Text = "Run",   Action = [ "LeftCtrl", "F5" ] },
-    { Text = "Term",  Action = [ "LeftCtrl", "LeftShift", "Grave" ] },
-    { Text = "Go",    Action = [ "LeftCtrl", "G" ] },
-    { Text = "Fmt",   Action = [ "LeftCtrl", "LeftShift", "I" ] },
-    { Text = "Find",  Action = [ "LeftCtrl", "F" ] },
-    { Text = "Rep",   Action = [ "LeftCtrl", "H" ] },
-    { Text = "Brk",   Action = "F9" },
-    { Text = "Step",  Action = "F10" },
-    { Text = "In",    Action = "F11" },
-    { Text = "Out",   Action = [ "LeftShift", "F11" ] },
-    { Text = "Sav",   Action = [ "LeftCtrl", "S" ] },
-]
+[[layer]]
+Text = "Build"
+Action = [ "LeftCtrl", "LeftShift", "B" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Run"
+Action = [ "LeftCtrl", "F5" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Term"
+Action = [ "LeftCtrl", "LeftShift", "Grave" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Go"
+Action = [ "LeftCtrl", "G" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Fmt"
+Action = [ "LeftCtrl", "LeftShift", "I" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Find"
+Action = [ "LeftCtrl", "F" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Rep"
+Action = [ "LeftCtrl", "H" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Brk"
+Action = "F9"
+OnClick = "Action"
+
+[[layer]]
+Text = "Step"
+Action = "F10"
+OnClick = "Action"
+
+[[layer]]
+Text = "In"
+Action = "F11"
+OnClick = "Action"
+
+[[layer]]
+Text = "Out"
+Action = [ "LeftShift", "F11" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "Sav"
+Action = [ "LeftCtrl", "S" ]
+OnClick = "Action"

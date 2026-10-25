@@ -1,17 +1,62 @@
 # gaming.toml — Gaming: screenshots, recording, Discord mute, volume
 # Non-intrusive system controls that work across games
 
-PrimaryLayerKeys = [
-    { Text = "SHOT", Action = "Print" },
-    { Text = "REC",  Action = [ "LeftCtrl", "LeftAlt", "R" ] },
-    { Text = "MUTE", Action = "MicMute" },
-    { Text = "VOL-", Action = "VolumeDown" },
-    { Text = "VOL+", Action = "VolumeUp" },
-    { Text = "PLAY", Action = "PlayPause" },
-    { Text = "PREV", Action = "PreviousSong" },
-    { Text = "NEXT", Action = "NextSong" },
-    { Text = "DESK", Action = [ "LeftMeta", "Tab" ] },
-    { Text = "ESC",  Action = "Esc" },
-    { Text = "F11",  Action = "F11" },
-    { Text = "F12",  Action = "F12" },
-]
+[[layer]]
+Text = "SHOT"
+Action = "Print"
+OnClick = "Action"
+
+[[layer]]
+Text = "REC"
+Action = [ "LeftCtrl", "LeftAlt", "R" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "MUTE"
+Action = "MicMute"
+OnClick = "Action"
+
+[[layer]]
+Text = "VOL-"
+Action = "VolumeDown"
+OnClick = "Action"
+
+[[layer]]
+Text = "VOL+"
+Action = "VolumeUp"
+OnClick = "Action"
+
+[[layer]]
+Text = "PLAY"
+Action = "PlayPause"
+OnClick = "Action"
+
+[[layer]]
+Text = "PREV"
+Action = "PreviousSong"
+OnClick = "Action"
+
+[[layer]]
+Text = "NEXT"
+Action = "NextSong"
+OnClick = "Action"
+
+[[layer]]
+Text = "DESK"
+Action = [ "LeftMeta", "Tab" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "ESC"
+Action = "Esc"
+OnClick = "Action"
+
+[[layer]]
+Text = "F11"
+Action = "F11"
+OnClick = "Action"
+
+[[layer]]
+Text = "F12"
+Action = "F12"
+OnClick = "Action"

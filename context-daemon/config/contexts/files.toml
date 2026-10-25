@@ -1,14 +1,51 @@
 # files.toml — gestor de archivos: refrescar, renombrar, copiar, buscar
 
-PrimaryLayerKeys = [
-    { Text = "F5",   Action = "F5" },
-    { Text = "F2",   Action = "F2" },
-    { Text = "F6",   Action = "F6" },
-    { Text = "⌘",    Action = [ "LeftCtrl", "L" ] },
-    { Text = "🔍",   Action = [ "LeftCtrl", "F" ] },
-    { Text = "📋",   Action = [ "LeftCtrl", "C" ] },
-    { Text = "✂",    Action = [ "LeftCtrl", "X" ] },
-    { Text = "📥",   Action = [ "LeftCtrl", "V" ] },
-    { Text = "🗑",    Action = [ "LeftCtrl", "Delete" ] },
-    { Text = "↺",    Action = [ "LeftCtrl", "Z" ] }
-]
+[[layer]]
+Text = "F5"
+Action = "F5"
+OnClick = "Action"
+
+[[layer]]
+Text = "F2"
+Action = "F2"
+OnClick = "Action"
+
+[[layer]]
+Text = "F6"
+Action = "F6"
+OnClick = "Action"
+
+[[layer]]
+Text = "⌘"
+Action = [ "LeftCtrl", "L" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "🔍"
+Action = [ "LeftCtrl", "F" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "📋"
+Action = [ "LeftCtrl", "C" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "✂"
+Action = [ "LeftCtrl", "X" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "📥"
+Action = [ "LeftCtrl", "V" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "🗑"
+Action = [ "LeftCtrl", "Delete" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "↺"
+Action = [ "LeftCtrl", "Z" ]
+OnClick = "Action"

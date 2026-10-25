@@ -1,17 +1,62 @@
 # screenshot.toml — Screenshot utilities
 # Region, window, full screen, with clipboard/file toggle
 
-PrimaryLayerKeys = [
-    { Text = "FULL", Action = "Print" },
-    { Text = "AREA", Action = [ "LeftShift", "Print" ] },
-    { Text = "WIN",  Action = [ "LeftAlt", "Print" ] },
-    { Text = "CLIP", Action = [ "LeftCtrl", "Print" ] },
-    { Text = "DLAY", Action = [ "LeftCtrl", "LeftShift", "Print" ] },
-    { Text = "SAVE", Action = [ "LeftCtrl", "S" ] },
-    { Text = "COPY", Action = [ "LeftCtrl", "C" ] },
-    { Text = "PSTE", Action = [ "LeftCtrl", "V" ] },
-    { Text = "ESC",  Action = "Esc" },
-    { Text = "F11",  Action = "F11" },
-    { Text = "F12",  Action = "F12" },
-    { Text = "PWR",  Action = "Power" },
-]
+[[layer]]
+Text = "FULL"
+Action = "Print"
+OnClick = "Action"
+
+[[layer]]
+Text = "AREA"
+Action = [ "LeftShift", "Print" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "WIN"
+Action = [ "LeftAlt", "Print" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "CLIP"
+Action = [ "LeftCtrl", "Print" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "DLAY"
+Action = [ "LeftCtrl", "LeftShift", "Print" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "SAVE"
+Action = [ "LeftCtrl", "S" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "COPY"
+Action = [ "LeftCtrl", "C" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "PSTE"
+Action = [ "LeftCtrl", "V" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "ESC"
+Action = "Esc"
+OnClick = "Action"
+
+[[layer]]
+Text = "F11"
+Action = "F11"
+OnClick = "Action"
+
+[[layer]]
+Text = "F12"
+Action = "F12"
+OnClick = "Action"
+
+[[layer]]
+Text = "PWR"
+Action = "Power"
+OnClick = "Action"

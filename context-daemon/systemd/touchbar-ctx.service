@@ -1,0 +1,27 @@
+[Unit]
+Description=Touch Bar contextual daemon (Hyprland/Sway)
+After=reactive-dfr.service
+
+[Service]
+Type=simple
+ExecStart=/usr/bin/python3 /usr/lib/reactive-dfr/context-daemon/daemon.py
+WorkingDirectory=/usr/lib/reactive-dfr/context-daemon
+Environment=PYTHONPATH=/usr/lib/reactive-dfr/context-daemon
+Environment=TOUCHBAR_CONFIG_DIR=/etc/reactive-dfr/config
+Restart=on-failure
+RestartSec=2
+
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadWritePaths=%h/.config/reactive-dfr
+PrivateTmp=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectKernelLogs=true
+RestrictAddressFamilies=AF_UNIX AF_NETLINK
+RestrictNamespaces=true
+RestrictRealtime=true
+
+[Install]
+WantedBy=default.target

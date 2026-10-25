@@ -1,17 +1,62 @@
 # system.toml — System controls: power, suspend, brightness, audio
 # System-level controls always accessible
 
-PrimaryLayerKeys = [
-    { Text = "🔒", Action = [ "LeftMeta", "L" ] },
-    { Text = "SUS", Action = [ "LeftCtrl", "LeftAlt", "Delete" ] },
-    { Text = "BR-", Action = "BrightnessDown" },
-    { Text = "BR+", Action = "BrightnessUp" },
-    { Text = "TB-", Action = "IllumDown" },
-    { Text = "TB+", Action = "IllumUp" },
-    { Text = "MUTE", Action = "Mute" },
-    { Text = "VOL-", Action = "VolumeDown" },
-    { Text = "VOL+", Action = "VolumeUp" },
-    { Text = "PWR", Action = "Power" },
-    { Text = "ESC", Action = "Esc" },
-    { Text = "F12", Action = "F12" },
-]
+[[layer]]
+Text = "🔒"
+Action = [ "LeftMeta", "L" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "SUS"
+Action = [ "LeftCtrl", "LeftAlt", "Delete" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "BR-"
+Action = "BrightnessDown"
+OnClick = "Action"
+
+[[layer]]
+Text = "BR+"
+Action = "BrightnessUp"
+OnClick = "Action"
+
+[[layer]]
+Text = "TB-"
+Action = "IllumDown"
+OnClick = "Action"
+
+[[layer]]
+Text = "TB+"
+Action = "IllumUp"
+OnClick = "Action"
+
+[[layer]]
+Text = "MUTE"
+Action = "Mute"
+OnClick = "Action"
+
+[[layer]]
+Text = "VOL-"
+Action = "VolumeDown"
+OnClick = "Action"
+
+[[layer]]
+Text = "VOL+"
+Action = "VolumeUp"
+OnClick = "Action"
+
+[[layer]]
+Text = "PWR"
+Action = "Power"
+OnClick = "Action"
+
+[[layer]]
+Text = "ESC"
+Action = "Esc"
+OnClick = "Action"
+
+[[layer]]
+Text = "F12"
+Action = "F12"
+OnClick = "Action"

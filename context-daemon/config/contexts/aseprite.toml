@@ -4,17 +4,62 @@
 # Slide gestures (Phase 3.4) can be assigned to brush_size, opacity, color
 # via the extended ButtonConfig fields when available.
 
-PrimaryLayerKeys = [
-    { Text = "↶",   Action = [ "LeftCtrl", "Z" ] },
-    { Text = "↷",   Action = [ "LeftCtrl", "LeftShift", "Z" ] },
-    { Text = "🎨",  Action = [ "B" ] },
-    { Text = "⬛",  Action = [ "E" ] },
-    { Text = "LAY", Action = [ "LeftCtrl", "B" ] },
-    { Text = "PAL", Action = "F8" },
-    { Text = "GRD", Action = [ "LeftShift", "G" ] },
-    { Text = "MIR", Action = "M" },
-    { Text = "SKL", Action = [ "LeftCtrl", "LeftShift", "C" ] },
-    { Text = "SEL", Action = [ "M" ] },
-    { Text = "CTR", Action = [ "LeftCtrl", "LeftShift", "X" ] },
-    { Text = "SAV", Action = [ "LeftCtrl", "S" ] },
-]
+[[layer]]
+Text = "↶"
+Action = [ "LeftCtrl", "Z" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "↷"
+Action = [ "LeftCtrl", "LeftShift", "Z" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "🎨"
+Action = [ "B" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "⬛"
+Action = [ "E" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "LAY"
+Action = [ "LeftCtrl", "B" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "PAL"
+Action = "F8"
+OnClick = "Action"
+
+[[layer]]
+Text = "GRD"
+Action = [ "LeftShift", "G" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "MIR"
+Action = "M"
+OnClick = "Action"
+
+[[layer]]
+Text = "SKL"
+Action = [ "LeftCtrl", "LeftShift", "C" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "SEL"
+Action = [ "M" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "CTR"
+Action = [ "LeftCtrl", "LeftShift", "X" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "SAV"
+Action = [ "LeftCtrl", "S" ]
+OnClick = "Action"

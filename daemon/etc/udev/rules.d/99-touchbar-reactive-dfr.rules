@@ -1,0 +1,20 @@
+# T2 Touch Bar: switch from config 1 to config 2 (T1 handled by ibridge-config-switch)
+ACTION=="add", SUBSYSTEM=="usb", ATTR{idVendor}=="05ac", ATTR{idProduct}=="8302", ATTR{bConfigurationValue}=="1", ATTR{bConfigurationValue}="0", ATTR{bConfigurationValue}="2"
+
+# Auto-start the daemon when the Touch Bar digitizer appears
+SUBSYSTEM=="input", ATTR{name}=="Apple Inc. Touch Bar Display Touchpad", TAG+="systemd", ENV{SYSTEMD_WANTS}="reactive-dfr.service"
+SUBSYSTEM=="input", ATTR{name}=="MacBookPro17,1 Touch Bar", TAG+="systemd", ENV{SYSTEMD_WANTS}="reactive-dfr.service"
+SUBSYSTEM=="input", ATTR{name}=="Mac14,7 Touch Bar", TAG+="systemd", ENV{SYSTEMD_WANTS}="reactive-dfr.service"
+
+# DRM device alias for systemd
+SUBSYSTEM=="drm", KERNEL=="card[0-9]*", DRIVERS=="adp|appletbdrm", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_display"
+
+# Backlight aliases
+SUBSYSTEM=="backlight", KERNEL=="appletb_backlight", DRIVERS=="hid-appletb-bl", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_backlight"
+SUBSYSTEM=="backlight", KERNEL=="228200000.display-pipe.0", DRIVERS=="panel-summit", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_backlight"
+SUBSYSTEM=="backlight", KERNELS=="228600000.dsi.0", DRIVERS=="panel-summit", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_backlight"
+
+SUBSYSTEM=="backlight", KERNEL=="apple-panel-bl", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_display_backlight"
+SUBSYSTEM=="backlight", KERNEL=="gmux_backlight", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_display_backlight"
+SUBSYSTEM=="backlight", KERNEL=="intel_backlight", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_display_backlight"
+SUBSYSTEM=="backlight", KERNEL=="acpi_video0", TAG+="systemd", ENV{SYSTEMD_ALIAS}="/dev/reactive_dfr_display_backlight"

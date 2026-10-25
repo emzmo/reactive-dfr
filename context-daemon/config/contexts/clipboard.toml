@@ -1,17 +1,62 @@
 # clipboard.toml — Clipboard history and management
 # Requires a clipboard manager (wl-clipboard, copyq, clipman, etc.)
 
-PrimaryLayerKeys = [
-    { Text = "PSTE", Action = [ "LeftCtrl", "V" ] },
-    { Text = "COPY", Action = [ "LeftCtrl", "C" ] },
-    { Text = "CUT",  Action = [ "LeftCtrl", "X" ] },
-    { Text = "HIST", Action = [ "LeftCtrl", "LeftAlt", "V" ] },
-    { Text = "CLR",  Action = [ "LeftCtrl", "LeftShift", "Delete" ] },
-    { Text = "SEL",  Action = [ "LeftCtrl", "A" ] },
-    { Text = "UNDO", Action = [ "LeftCtrl", "Z" ] },
-    { Text = "REDO", Action = [ "LeftCtrl", "LeftShift", "Z" ] },
-    { Text = "F1",   Action = "F1" },
-    { Text = "F2",   Action = "F2" },
-    { Text = "F11",  Action = "F11" },
-    { Text = "ESC",  Action = "Esc" },
-]
+[[layer]]
+Text = "PSTE"
+Action = [ "LeftCtrl", "V" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "COPY"
+Action = [ "LeftCtrl", "C" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "CUT"
+Action = [ "LeftCtrl", "X" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "HIST"
+Action = [ "LeftCtrl", "LeftAlt", "V" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "CLR"
+Action = [ "LeftCtrl", "LeftShift", "Delete" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "SEL"
+Action = [ "LeftCtrl", "A" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "UNDO"
+Action = [ "LeftCtrl", "Z" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "REDO"
+Action = [ "LeftCtrl", "LeftShift", "Z" ]
+OnClick = "Action"
+
+[[layer]]
+Text = "F1"
+Action = "F1"
+OnClick = "Action"
+
+[[layer]]
+Text = "F2"
+Action = "F2"
+OnClick = "Action"
+
+[[layer]]
+Text = "F11"
+Action = "F11"
+OnClick = "Action"
+
+[[layer]]
+Text = "ESC"
+Action = "Esc"
+OnClick = "Action"
