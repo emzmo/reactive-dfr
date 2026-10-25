@@ -31,23 +31,94 @@ The project is divided into two main components:
 
 ## Installation
 
-### Arch Linux (PKGBUILD) - Coming Soon
-We are working on an AUR package. Once available, you will be able to install it simply with:
+Requires [appletbdrm-t1](https://github.com/emzmo/appletbdrm-t1) to be installed first (the kernel driver).
+
+### Option 1 — Install script (any distro)
+
 ```bash
-paru -S reactive-dfr
+git clone https://github.com/emzmo/reactive-dfr.git
+cd reactive-dfr
+sudo ./install.sh install
+sudo reboot
 ```
 
-### Install Script - Coming Soon
-An install.sh script will be provided to automate the build and setup process.
+The script compiles the Rust daemon, installs all system components
+(binary, services, config, udev rules, SVG icons), and deploys
+user config + widgets to `~/.config/reactive-dfr/`.
 
-### Manual Build (Current)
-For now, you can build it manually:
+Other commands:
 
-1. Clone the repository.
-2. Build the Rust daemon: `cd daemon && cargo build --release`
-3. Install the Python context-daemon dependencies.
-4. Configure the systemd services and udev rules (see `daemon/etc/`).
-5. Note: You will also need the patched kernel driver. See [appletbdrm-t1](https://github.com/emzmo/appletbdrm-t1).
+```bash
+./install.sh status            # show what's installed
+sudo ./install.sh uninstall    # remove system components (keeps user config)
+```
+
+### Option 2 — Manual
+
+```bash
+git clone https://github.com/emzmo/reactive-dfr.git
+cd reactive-dfr
+
+# Build the Rust daemon
+cd daemon && cargo build --release && cd ..
+
+# Install binary
+sudo install -Dm755 daemon/target/release/reactive-dfr /usr/bin/reactive-dfr
+
+# Install shared assets (SVG icons, default config, shipped widgets)
+sudo mkdir -p /usr/share/reactive-dfr
+sudo cp -r daemon/share/reactive-dfr/* /usr/share/reactive-dfr/
+
+# Install context daemon (Python)
+sudo mkdir -p /usr/lib/reactive-dfr/context-daemon/{backends,scripts,widgets}
+sudo install -Dm755 context-daemon/daemon.py   /usr/lib/reactive-dfr/context-daemon/daemon.py
+sudo install -Dm644 context-daemon/composer.py /usr/lib/reactive-dfr/context-daemon/composer.py
+sudo install -Dm644 context-daemon/matcher.py  /usr/lib/reactive-dfr/context-daemon/matcher.py
+sudo install -Dm644 context-daemon/backends/*.py /usr/lib/reactive-dfr/context-daemon/backends/
+sudo install -Dm644 context-daemon/scripts/power_monitor.py /usr/lib/reactive-dfr/context-daemon/scripts/
+sudo cp context-daemon/widgets/* /usr/lib/reactive-dfr/context-daemon/widgets/
+
+# Install system config
+sudo mkdir -p /etc/reactive-dfr/config/contexts
+sudo install -Dm644 context-daemon/config/base.toml    /etc/reactive-dfr/config/base.toml
+sudo install -Dm644 context-daemon/config/matcher.toml /etc/reactive-dfr/config/matcher.toml
+sudo cp context-daemon/config/contexts/*.toml /etc/reactive-dfr/config/contexts/
+
+# Install systemd services
+sudo install -Dm644 daemon/etc/systemd/system/reactive-dfr.service /etc/systemd/system/
+sudo install -Dm644 daemon/etc/systemd/system/systemd-backlight@backlight:appletb_backlight.service /etc/systemd/system/
+sudo install -Dm644 context-daemon/systemd/touchbar-ctx.service /usr/lib/systemd/user/
+sudo install -Dm644 context-daemon/systemd/touchbar-power-monitor.service /usr/lib/systemd/user/
+sudo systemctl daemon-reload
+sudo systemctl enable reactive-dfr.service
+
+# Install udev rules
+sudo install -Dm644 daemon/etc/udev/rules.d/99-touchbar-reactive-dfr.rules /etc/udev/rules.d/
+sudo install -Dm644 daemon/etc/udev/rules.d/99-touchbar-seat.rules /etc/udev/rules.d/
+sudo udevadm control --reload-rules
+
+# Deploy user config + widgets
+./reactive-dfr-setup
+
+# Enable user services
+systemctl --user enable --now touchbar-ctx.service
+systemctl --user enable --now touchbar-power-monitor.service
+
+sudo reboot
+```
+
+### Option 3 — PKGBUILD (Arch Linux, not yet published on AUR)
+
+```bash
+git clone https://github.com/emzmo/reactive-dfr.git
+cd reactive-dfr
+makepkg -si
+reactive-dfr-setup
+sudo systemctl enable reactive-dfr.service
+systemctl --user enable --now touchbar-ctx.service
+systemctl --user enable --now touchbar-power-monitor.service
+sudo reboot
+```
 
 ## Future Ideas
 
