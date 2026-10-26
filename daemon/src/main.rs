@@ -2051,6 +2051,12 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     let mut active_layer = 0;
     let mut needs_complete_redraw = true;
     let mut last_soft_dim = 1.0;
+    // Cache for the software-dimming LUT.  Rebuilt only when the dim
+    // factor changes between frames; during a dim transition the
+    // factor animates each frame so the cache is naturally
+    // invalidated, and once the dim level settles the same 256-entry
+    // LUT is reused instead of being recomputed per frame.
+    let mut cached_dim_lut: Option<[u8; 256]> = None;
 
     // Screensaver state
     let mut screensaver_state = ScreensaverState::Normal;
@@ -2809,10 +2815,19 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                             // Software brightness: the appletb hardware backlight
                             // only has full/dim/off, so finer levels are done by
                             // scaling the pixels on their way to the framebuffer.
-                            let mut lut = [0u8; 256];
-                            for (i, v) in lut.iter_mut().enumerate() {
-                                *v = (i as f64 * dim) as u8;
+                            // The LUT is cached: rebuilt only when the dim factor
+                            // changes (during the dim animation), reused once it
+                            // settles.  Saves a 256-iteration loop per frame.
+                            let need_rebuild = cached_dim_lut.is_none()
+                                || (dim - last_soft_dim).abs() > 0.0001;
+                            if need_rebuild {
+                                let mut lut = [0u8; 256];
+                                for (i, v) in lut.iter_mut().enumerate() {
+                                    *v = (i as f64 * dim) as u8;
+                                }
+                                cached_dim_lut = Some(lut);
                             }
+                            let lut = cached_dim_lut.as_ref().unwrap();
                             for (dst, src) in out.chunks_exact_mut(4).zip(data.chunks_exact(4)) {
                                 dst[0] = lut[src[0] as usize];
                                 dst[1] = lut[src[1] as usize];
@@ -2821,6 +2836,8 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                             }
                         } else {
                             out.copy_from_slice(&data);
+                            // Invalidate cache so it's rebuilt next time dim drops.
+                            cached_dim_lut = None;
                         }
                     }
                     if let Err(err) = drm.dirty(&clips) {
