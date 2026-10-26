@@ -215,6 +215,16 @@ const FLUSH_STALL_MAX_DOUBLINGS: u32 = 4;
 /// band (measured near-zero stalls under ~200 ms) rather than at the ~700 ms
 /// cliff, for margin; can be relaxed once it is confirmed on hardware.
 const HEARTBEAT_INTERVAL: Duration = Duration::from_millis(150);
+
+/// Maximum consecutive flush failures before the daemon exits for
+/// restart.  On T1, a USB reset (S3 suspend/resume) causes every
+/// subsequent drm.dirty() to fail — the daemon would stay alive
+/// but unable to render.  After this many failures in a row,
+/// exit(1) so Restart=always + the open_card retry loop bring
+/// the daemon back with fresh file descriptors.  A single
+/// transient failure does NOT trigger exit — the counter resets
+/// on the next successful flush.
+const MAX_CONSECUTIVE_FLUSH_FAILURES: u32 = 3;
 /// Time constant of the post-scroll snap glide (to the nearest slot boundary).
 const SNAP_TAU: f64 = 0.08;
 /// The snap glide is finished once within this many px of its target.
@@ -1854,6 +1864,10 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     let mut last_flush = Instant::now();
     // Consecutive stalled flushes (see the cool-down at the flush site).
     let mut flush_stalls: u32 = 0;
+    // Consecutive drm.dirty() failures.  Reset to 0 on any
+    // successful flush.  When it reaches MAX_CONSECUTIVE_FLUSH_FAILURES
+    // the daemon exits for restart (S3 resume / USB reset scenario).
+    let mut consecutive_flush_failures: u32 = 0;
     // NQTD_FRAME_LOG=1 prints per-frame timings to the journal, for chasing
     // pacing problems on real hardware.
     let frame_log = std::env::var_os("NQTD_FRAME_LOG").is_some_and(|v| v != "0");
@@ -2841,10 +2855,37 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                         }
                     }
                     if let Err(err) = drm.dirty(&clips) {
-                        // A struggling appletbdrm surfaces its errors here;
-                        // panicking into emergency mode would only pile more
-                        // traffic onto a panel that needs the opposite.
-                        println!("dirty flush failed: {err}");
+                        // Flush failure — could be transient (single -EAGAIN)
+                        // or persistent (USB reset after S3 resume).  Track
+                        // consecutive failures and exit if they persist, so
+                        // Restart=always + the open_card retry loop can
+                        // bring the daemon back with fresh file descriptors.
+                        consecutive_flush_failures += 1;
+                        match consecutive_flush_failures {
+                            1 => eprintln!(
+                                "reactive-dfr: flush failed (1st, may be transient): {err}"
+                            ),
+                            2 => eprintln!(
+                                "reactive-dfr: flush failed (2nd consecutive): {err}"
+                            ),
+                            n if n >= MAX_CONSECUTIVE_FLUSH_FAILURES => {
+                                eprintln!(
+                                    "reactive-dfr: flush failed {n} consecutive times, \
+                                     USB device may have reset — exiting for restart"
+                                );
+                                std::process::exit(1);
+                            }
+                            _ => {}
+                        }
+                    } else {
+                        // Flush succeeded — reset the failure counter.
+                        if consecutive_flush_failures > 0 {
+                            eprintln!(
+                                "reactive-dfr: flush recovered after \
+                                 {consecutive_flush_failures} failure(s)"
+                            );
+                            consecutive_flush_failures = 0;
+                        }
                     }
                     last_flush = Instant::now();
                 }
