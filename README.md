@@ -120,6 +120,61 @@ systemctl --user enable --now touchbar-power-monitor.service
 sudo reboot
 ```
 
+## Profiling
+
+The daemon has built-in profiling via environment variables. Enable
+them to diagnose performance issues, USB bandwidth problems, or
+touch event anomalies.
+
+### NQTD_FRAME_LOG=1
+
+Prints per-frame timings to the journal. Shows frame period, cairo draw
+time, USB flush time, whether it was a complete redraw, number of
+dirty clips, and their dimensions.
+
+```
+frame: period=5050.5ms draw=0.4ms flush=15.0ms complete=false clips=1 dims(w×h)=[(60, 1799)]
+```
+
+- **period**: time since the previous frame (ms)
+- **draw**: cairo rendering time (ms)
+- **flush**: USB transfer time (ms) — if consistently >15ms, USB bandwidth is saturated
+- **complete**: `true` = full-bar redraw, `false` = partial (dirty clips only)
+- **clips**: number of dirty regions flushed
+- **dims**: dimensions of each clip (width × height in pixels)
+
+Also flags suspect dirty rects (zero/inverted area) that could cause
+the appletbdrm protocol desync, and logs flush failures.
+
+### NQTD_TOUCH_LOG=1
+
+Prints touch event diagnostics. Shows each touch-down, movement,
+and touch-up with slot, coordinates, and state transitions.
+
+```
+touch: down slot=0 x=1234 y=34
+touch: up slot=0 state=Held
+```
+
+### How to enable
+
+**Temporary (systemctl override):**
+```bash
+sudo systemctl edit reactive-dfr
+# Add:
+[Service]
+Environment=NQTD_FRAME_LOG=1
+# Save, then:
+sudo systemctl restart reactive-dfr
+```
+
+**Remove when done:**
+```bash
+sudo rm /etc/systemd/system/reactive-dfr.service.d/override.conf
+sudo systemctl daemon-reload
+sudo systemctl restart reactive-dfr
+```
+
 ## Future Ideas
 
 - **Game Profiles**: Deep integration with games. Imagine playing Age of Empires and having the Touch Bar display your resources, or when selecting a villager, showing building options.
