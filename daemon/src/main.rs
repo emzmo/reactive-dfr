@@ -2758,7 +2758,8 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
             || slider_animating
             || media_animating
             || backlight.soft_dim_animating()
-            || backlight::dim_held();
+            || backlight::dim_held()
+            || !touches.is_empty();
         if is_interacting {
             frame_period = FRAME_PERIOD;
             last_interaction_end = None;
@@ -2984,7 +2985,8 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
             || needs_complete_redraw
             || backlight.soft_dim_animating()
             || backlight::dim_held()
-            || layers[active_layer].buttons.iter().any(|b| b.1.changed);
+            || layers[active_layer].buttons.iter().any(|b| b.1.changed)
+            || !touches.is_empty();
 
         // Settle state: after interaction ends, keep the timer armed at 5fps
         // for 1 second so widget updates during this window render promptly.
