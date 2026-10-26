@@ -1704,6 +1704,60 @@ fn emergency_mode(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) -> ! {
     }
 }
 
+/// The Apple chip type driving the Touch Bar.  Read once from the
+/// kernel driver's sysfs attribute (`/sys/class/drm/cardN/device/
+/// mac_type`) at startup — it never changes during a session.
+/// Used to gate T2-specific workarounds (heartbeat flush, full-bar
+/// redraw promotion) that are unnecessary on T1 and waste USB
+/// bandwidth.  `Unknown` means the attribute doesn't exist (old
+/// driver without the patch) — fall back to the conservative
+/// behavior of applying all workarounds.
+#[derive(Clone, Copy, PartialEq)]
+enum ChipType {
+    T1,
+    T2,
+    Unknown,
+}
+
+/// Detect the chip type by reading the `mac_type` sysfs attribute
+/// from the appletbdrm DRM card.  Returns `Unknown` if the card
+/// or attribute is not found — the caller should treat Unknown as
+/// T2 (apply all workarounds) for safety.
+fn detect_chip_type() -> ChipType {
+    let drm_dir = match std::fs::read_dir("/sys/class/drm") {
+        Ok(d) => d,
+        Err(_) => return ChipType::Unknown,
+    };
+    for entry in drm_dir.flatten() {
+        let name = entry.file_name().to_string_lossy().to_string();
+        if !name.starts_with("card") || name.contains('-') {
+            continue;
+        }
+        // Check if this card is backed by appletbdrm
+        let driver_link = entry.path().join("device/driver");
+        let is_appletbdrm = std::fs::read_link(&driver_link)
+            .map(|t| t.to_string_lossy().contains("appletbdrm"))
+            .unwrap_or(false);
+        if !is_appletbdrm {
+            continue;
+        }
+        // Read the mac_type attribute
+        let mac_type_path = entry.path().join("device/mac_type");
+        match std::fs::read_to_string(&mac_type_path) {
+            Ok(content) => {
+                let content = content.trim();
+                return match content {
+                    "t1" => ChipType::T1,
+                    "t2" => ChipType::T2,
+                    _ => ChipType::Unknown,
+                };
+            }
+            Err(_) => return ChipType::Unknown,
+        }
+    }
+    ChipType::Unknown
+}
+
 fn main() {
     // Retry opening the DRM card for up to 60 seconds.  After S3
     // suspend/resume the T1 iBridge USB device is reset and the DRM
@@ -1737,6 +1791,16 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     let (height, width) = drm.mode().size();
     let (db_width, db_height) = drm.fb_info().unwrap().size();
     let mut backlight = BacklightManager::new();
+
+    // Detect chip type once — it never changes during a session.
+    // T2-specific workarounds (heartbeat, full-bar redraw promotion)
+    // are gated on this to avoid wasting USB bandwidth on T1.
+    let chip_type = detect_chip_type();
+    match chip_type {
+        ChipType::T1 => println!("reactive-dfr: running on T1, T2 workarounds disabled"),
+        ChipType::T2 => println!("reactive-dfr: running on T2, workarounds active"),
+        ChipType::Unknown => println!("reactive-dfr: mac_type sysfs not found, assuming T2 workarounds for safety"),
+    }
 
     // Work out whose config we serve (and whose privileges we drop to). We do
     // NOT block waiting for a login and never fall back to `nobody`: if no one
@@ -2632,7 +2696,13 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         // clip. Full-bar draw is cheap (~4 ms with the SVG cache), and widget
         // ticks are seconds apart. (The 1 px keep-warm heartbeat never stalls in
         // the logs, so tiny clips are fine -- only widget-sized ones are toxic.)
-        if !needs_complete_redraw && layers[active_layer].buttons.iter().any(|b| b.1.changed) {
+        //
+        // On T1 this desync has never been observed, so partial clips are safe
+        // and we skip the promotion to save USB bandwidth (587 KB → ~2-10 KB).
+        if !needs_complete_redraw
+            && layers[active_layer].buttons.iter().any(|b| b.1.changed)
+            && chip_type != ChipType::T1
+        {
             needs_complete_redraw = true;
         }
 
@@ -2847,7 +2917,14 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         // stalls ~1 s, so poking merely feeds it; the stream needs quiet to
         // resync. When frames are actually flushing (animation) last_flush stays
         // fresh so the heartbeat self-suppresses. Wake is capped to the interval.
-        if backlight.current_bl() > 0 && !frame_pending && Instant::now() >= next_frame {
+        //
+        // On T1 the cold-flush desync has never been observed, so the heartbeat
+        // is disabled to avoid unnecessary USB traffic.
+        if chip_type != ChipType::T1
+            && backlight.current_bl() > 0
+            && !frame_pending
+            && Instant::now() >= next_frame
+        {
             if last_flush.elapsed() >= HEARTBEAT_INTERVAL {
                 let t0 = Instant::now();
                 let _ = drm.dirty(&[ClipRect::new(0, 0, 1, 1)]);
