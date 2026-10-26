@@ -190,6 +190,18 @@ const FLING_FRICTION_TAU: f64 = 0.3;
 /// panel (e.g. chasing the ~110 Hz digitizer during a drag) is wasted work
 /// and presents unevenly.
 const FRAME_PERIOD: Duration = Duration::from_micros(16_667);
+
+/// Adaptive FPS tiers — the frame period changes based on what is happening:
+///
+///   INTERACTION   60 fps (16.7ms)  — touch down, swipe, slider, scroll, animation
+///   WIDGET_UPDATE 15 fps (66.7ms)  — a widget changed but no touch input
+///   IDLE_SETTLE    5 fps (200ms)   — 1s after interaction ends, winding down
+///   FULL_IDLE       0 fps          — nothing changed (timer unset, epoll blocks)
+///
+/// This frees USB 2.0 bandwidth on T1 during low-activity periods.
+const FRAME_PERIOD_WIDGET: Duration = Duration::from_millis(66);
+const FRAME_PERIOD_SETTLE: Duration = Duration::from_millis(200);
+const SETTLE_TIMEOUT: Duration = Duration::from_secs(1);
 /// How early a frame may render ahead of its deadline. Covers timer wake-up
 /// latency, so a wake landing just short of the boundary draws now instead of
 /// slipping a whole extra millisecond.
@@ -1859,6 +1871,13 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
     // the previous frame started (only for the frame log's period readout).
     let mut next_frame = Instant::now();
     let mut last_frame_start = Instant::now();
+    // Adaptive FPS: the current frame period (changes based on interaction
+    // state).  Starts at 60fps; drops to 15fps for widget-only updates,
+    // 5fps during settle, and 0 (timer unset) when fully idle.
+    let mut frame_period = FRAME_PERIOD;
+    // When the last interaction (touch/animation) ended — used to track
+    // the settle period.  None while interacting, Some(t) after it ends.
+    let mut last_interaction_end: Option<Instant> = None;
     // When the display was last actually flushed (any real dirty, including a
     // keep-warm heartbeat). Drives HEARTBEAT_INTERVAL so the T2 never goes cold.
     let mut last_flush = Instant::now();
@@ -2732,6 +2751,21 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
         // a slower average rate. A frame due too early is deferred, not
         // dropped: the pending state stays marked and the frame timer below
         // fires at the deadline. An idle bar draws nothing at all.
+        // Determine the interaction state and set the frame period
+        // accordingly.  This is the adaptive FPS core: 60fps during
+        // interaction, 15fps for widget-only updates, 5fps settle, 0 idle.
+        let is_interacting = scroll_animating
+            || slider_animating
+            || media_animating
+            || backlight.soft_dim_animating()
+            || backlight::dim_held();
+        if is_interacting {
+            frame_period = FRAME_PERIOD;
+            last_interaction_end = None;
+        } else if layers[active_layer].buttons.iter().any(|b| b.1.changed) {
+            frame_period = FRAME_PERIOD_WIDGET;
+        }
+
         if needs_complete_redraw || layers[active_layer].buttons.iter().any(|b| b.1.changed) {
             let now = Instant::now();
             if now + FRAME_SLACK >= next_frame {
@@ -2740,10 +2774,10 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                 // Deadlines are stamped at frame START (draw + flush count
                 // against the budget); re-anchor only if we fell more than a
                 // whole frame behind.
-                next_frame = if now > next_frame + FRAME_PERIOD {
-                    now + FRAME_PERIOD
+                next_frame = if now > next_frame + frame_period {
+                    now + frame_period
                 } else {
-                    next_frame + FRAME_PERIOD
+                    next_frame + frame_period
                 };
                 let was_complete = needs_complete_redraw;
                 let shift = if cfg.enable_pixel_shift {
@@ -2951,6 +2985,20 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
             || backlight.soft_dim_animating()
             || backlight::dim_held()
             || layers[active_layer].buttons.iter().any(|b| b.1.changed);
+
+        // Settle state: after interaction ends, keep the timer armed at 5fps
+        // for 1 second so widget updates during this window render promptly.
+        // After 1s with no changes, transition to full idle (timer unset).
+        let now = Instant::now();
+        if !is_interacting && last_interaction_end.is_none() {
+            // Interaction just ended — start the settle countdown.
+            last_interaction_end = Some(now);
+        }
+        let in_settle = match last_interaction_end {
+            Some(t) if now.duration_since(t) < SETTLE_TIMEOUT => true,
+            _ => false,
+        };
+
         if frame_pending {
             let remaining = next_frame
                 .saturating_duration_since(Instant::now())
@@ -2960,9 +3008,20 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                 TimerSetTimeFlags::empty(),
             );
             frame_timer_armed = true;
+        } else if in_settle {
+            // Settle: arm timer at 5fps even though nothing is pending,
+            // so we wake up promptly if a widget changes during this window.
+            frame_period = FRAME_PERIOD_SETTLE;
+            let _ = frame_timer.set(
+                Expiration::OneShot(TimeSpec::from_duration(FRAME_PERIOD_SETTLE)),
+                TimerSetTimeFlags::empty(),
+            );
+            frame_timer_armed = true;
         } else if frame_timer_armed {
             let _ = frame_timer.unset();
             frame_timer_armed = false;
+            // Settle period expired — fully idle now.
+            last_interaction_end = None;
         }
 
         // Keep-warm heartbeat (see HEARTBEAT_INTERVAL): while the bar is lit,
@@ -3102,6 +3161,14 @@ fn real_main(drm: &mut DrmBackend, uinput: &mut UInputHandle<File>) {
                     // screensaver from activating.
                     if let TouchEvent::Down(_) = te {
                         last_touchbar_interaction = Instant::now();
+                        // Adaptive FPS: instantly switch to 60fps on touch
+                        // down. Reset the frame deadline to now so the next
+                        // frame renders immediately, not at the next 5fps
+                        // or 15fps tick. This prevents stutter at the start
+                        // of a scroll/swipe.
+                        frame_period = FRAME_PERIOD;
+                        next_frame = Instant::now();
+                        last_interaction_end = None;
                     }
                     // When the bar is off (dim/off timeout), a touch
                     // wakes it but doesn't activate buttons — the
